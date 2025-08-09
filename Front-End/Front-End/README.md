@@ -1,12 +1,109 @@
-# React + Vite
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Gamification System for Safe Coding</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    h1 {
+      font-size: 28px;
+    }
+    h2 {
+      font-size: 22px;
+      margin-top: 30px;
+    }
+    ul {
+      padding-left: 20px;
+    }
+    .section {
+      margin-bottom: 25px;
+    }
+    .emoji {
+      font-size: 22px;
+    }
+    code {
+      background-color: #eee;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+  <h1 class="emoji">🛡️ Gamification System for Developing Safe Coding Practices</h1>
 
-Currently, two official plugins are available:
+  <div class="section">
+    <p><strong>Course:</strong> CSE471 – System Analysis and Design<br>
+    <strong>Lab Section:</strong> 01<br>
+    <strong>Semester:</strong> Spring 2025<br>
+    <strong>Group:</strong> 02<br>
+    <strong>Submission Date:</strong> 11-07-2025</p>
+  </div>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+  <h2 class="emoji">📘 Project Overview</h2>
+  <p>
+    <strong>Gamification System for Developing Safe Coding Practices among Novice Developers</strong> is an interactive web-based platform designed to teach secure coding practices through engaging challenges, real-time feedback, and peer collaboration. This project integrates core principles of gamification—badges, leaderboards, adaptive difficulty, and personalized progress tracking—to build lasting awareness of common security vulnerabilities in software development.
+  </p>
+  <p>
+    Targeting early-career developers, the platform uses the <strong>OWASP Top 10</strong> vulnerabilities as a base for hands-on challenges, allowing users to learn, practice, and reflect on secure coding standards.
+  </p>
 
-## Expanding the ESLint configuration
+  <h2 class="emoji">🧰 Tech Stack</h2>
+  <ul>
+    <li><strong>Frontend:</strong> React.js</li>
+    <li><strong>Backend:</strong> Node.js with Express.js</li>
+    <li><strong>Styling:</strong> Tailwind CSS</li>
+    <li><strong>Database:</strong> MongoDB (MongoDB Atlas)</li>
+    <li><strong>Deployment:</strong>
+      <ul>
+        <li>Vercel (Frontend)</li>
+        <li>Render or Railway (Backend)</li>
+      </ul>
+    </li>
+  </ul>
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+  <h2 class="emoji">🎮 Features Breakdown</h2>
+
+  <h3 class="emoji">📊 Module 1: User Management & Learning Progress</h3>
+  <ul>
+    <li>Secure registration & login with encrypted passwords</li>
+    <li>Editable user profile with institution, name, and experience level</li>
+    <li>Personalized dashboard with badges, XP, and progress graph</li>
+    <li>Weekly activity tracking with visual learning milestones</li>
+    <li>Optional gamified email reminders with security tips</li>
+    <li>Reflection log for each completed challenge</li>
+  </ul>
+
+  <h3 class="emoji">🔐 Module 2: Secure Coding Challenges</h3>
+  <ul>
+    <li>Challenges based on OWASP Top 10 (e.g., XSS, SQLi)</li>
+    <li>Interactive, adaptive tasks with hints and error feedback</li>
+    <li>Scenario-based simulations and real-world coding problems</li>
+    <li>Post-challenge explanations and expert insights</li>
+  </ul>
+
+  <h3 class="emoji">👥 Module 3: Peer Collaboration & Competition</h3>
+  <ul>
+    <li>Earn points by reviewing peers' solutions</li>
+    <li>Global leaderboard (XP, badges, and challenge completion)</li>
+    <li>Create/join coding groups for collaborative progress</li>
+    <li>Topic-based discussion forums (e.g., Authentication, Input Validation)</li>
+  </ul>
+
+  <h2 class="emoji">📜 License</h2>
+  <p>This project is developed for academic purposes under the CSE471 course and is not licensed for commercial distribution.</p>
+
+</body>
+</html>
+
+
+
