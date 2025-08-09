@@ -2,42 +2,42 @@ import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
 //we will actually use this becs we dont want to show all the users
-// export const getUsersForSidebar = async (req, res) => {
-//   try {
-//     const myId = req.user._id;
-
-//     // who I sent to
-//     const sentTo = await Message.distinct("receiverId", { senderId: myId });
-//     // who sent to me
-//     const receivedFrom = await Message.distinct("senderId", { receiverId: myId });
-
-//     // merge + dedupe + remove myself just in case
-//     const partnerIds = [
-//       ...new Set([...sentTo.map(String), ...receivedFrom.map(String)])
-//     ].filter(id => id !== String(myId));
-
-//     const users = await User.find({ _id: { $in: partnerIds } }).select("-password");
-
-//     return res.status(200).json(users);
-//   } catch (err) {
-//     console.error("Error in getUsersForSidebar:", err);
-//     return res.status(500).json({ message: "Internal Server Error" });
-//   }
-// };
-
 export const getUsersForSidebar = async (req, res) => {
   try {
-    const loggedInUserId = req.user._id;
-    const filteredUsers = await User.find({
-      _id: { $ne: loggedInUserId },
-    }).select("-password"); //so we are getting the id expect the user and also not getting the password
+    const myId = req.user._id;
 
-    res.status(200).json(filteredUsers);
-  } catch (error) {
-    console.log("Error in getUsersForSidebar", error.message);
-    res.status(500).json({ message: "Internal Server Error" });
+    // who I sent to
+    const sentTo = await Message.distinct("receiverId", { senderId: myId });
+    // who sent to me
+    const receivedFrom = await Message.distinct("senderId", { receiverId: myId });
+
+    // merge + dedupe + remove myself just in case
+    const partnerIds = [
+      ...new Set([...sentTo.map(String), ...receivedFrom.map(String)])
+    ].filter(id => id !== String(myId));
+
+    const users = await User.find({ _id: { $in: partnerIds } }).select("-password");
+
+    return res.status(200).json(users);
+  } catch (err) {
+    console.error("Error in getUsersForSidebar:", err);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+// export const getUsersForSidebar = async (req, res) => {
+//   try {
+//     const loggedInUserId = req.user._id;
+//     const filteredUsers = await User.find({
+//       _id: { $ne: loggedInUserId },
+//     }).select("-password"); //so we are getting the id expect the user and also not getting the password
+
+//     res.status(200).json(filteredUsers);
+//   } catch (error) {
+//     console.log("Error in getUsersForSidebar", error.message);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 
 export const getMessages = async (req, res) => {
   try {
