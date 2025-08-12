@@ -11,3 +11,11 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>
   </StrictMode>,
 )
+
+
+
+
+
+// const rootEl = document.getElementById('root');
+// createRoot(rootEl).render(<App />);
+
