@@ -1,0 +1,21 @@
+/* ExpertOpinion page tokens */
+:root {
+  --bg-start: 235 100% 95%;
+  --bg-end: 285 100% 94%;
+
+  --warm-start: 49 100% 50%;
+  --warm-end: 24 100% 50%;
+
+  --quote-start: 210 100% 70%;
+  --quote-end: 225 100% 55%;
+
+  --panel: 225 20% 85%;
+  --panel-foreground: 230 60% 18%;
+
+  --success-green: 145 62% 35%;
+  --title-warm: 18 85% 35%;
+  --neutral-900: 220 20% 10%;
+
+  --btn-start: 246 100% 85%;
+  --btn-end: 190 75% 58%;
+}
