@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./src/routes/auth.route.js";
 import messageRoutes from "./src/routes/message.route.js";
 import quizRoutes from "./src/routes/sql.route.js";
+import groupRoutes from "./src/routes/group.route.js"
 import { connectDB } from "./src/lib/db.js"
 
 const app = express();
@@ -17,6 +18,7 @@ app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 app.use("/api/message", messageRoutes);
 app.use("/api/quiz/",quizRoutes);
+app.use("/api/group/",groupRoutes)
 app.listen(PORT, () => {
     console.log("Server is running on port " + PORT);
     connectDB();
