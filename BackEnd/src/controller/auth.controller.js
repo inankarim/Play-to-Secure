@@ -1,6 +1,9 @@
 import cloudinary from "../lib/cloudinary.js";
 import { generateToken } from "../lib/utli.js";
 import User from "../models/user.model.js";
+
+import UserResponse from "../models/userResponse.model.js"; // for dashboard
+
 import bcrypt from "bcryptjs";
 
 export const signup = async (req, res) => {
@@ -36,7 +39,7 @@ export const signup = async (req, res) => {
       res.status(201).json({
         _id:newUser._id,
         fullName:newUser.fullName,
-        email:newUser.profilePic,
+        email:newUser.email,
         universityName: newUser.universityName,
         experienceLevel: newUser.experienceLevel, 
       })
@@ -134,5 +137,34 @@ export const checkAuth =(req, res) => {
     res.status(500).json({message:"Internal Server Error"});
   }
 }
+////////////Dashboard//////////////////////////////
 
+// Fetch user profile with points and badges
+export const getUserProfile = async (req, res) => {
+  try {
+    const userId = req.user._id; // user ID from decoded JWT
+
+    // Fetch user basic details from User model
+    const user = await User.findById(userId).select("-password"); // Exclude password
+
+    // Fetch user responses from UserResponse model to calculate points and badges
+    const userResponses = await UserResponse.find({ userId });
+
+    // Calculate total points (sum of points earned in correct answers)
+    const totalPoints = userResponses.reduce((acc, response) => acc + response.pointsEarned, 0);
+
+    // Calculate badge count (based on number of correct answers)
+    const badgeCount = userResponses.filter(response => response.isCorrect).length;
+
+    res.status(200).json({
+      user,
+      totalPoints,
+      badgeCount,
+      
+    });
+  } catch (error) {
+    console.log("Error fetching user profile with points and badges:", error);
+    res.status(500).json({ message: "Failed to fetch user profile with points and badges" });
+  }
+};
 
