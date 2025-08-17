@@ -36,11 +36,15 @@ const App = () => {
       <Navbar />
 
       <Routes>
+        <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/login" />} />
+
         <Route path="/chathome" element={authUser ? <HomePage /> : <Navigate to="/" />} />
         <Route path="/" element={authUser ? <Dashboard /> : <Navigate to="/login" />} />
         {/* <Route path="/quiz" element={authUser ? <QuizHomePage/> : <Navigate to="/login" />} /> */}
 
         <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
@@ -50,4 +54,5 @@ const App = () => {
     </div>
   );
 };
+
 export default App;
