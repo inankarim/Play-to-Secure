@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { useChatStore } from '../store/useChatStore';
 import { useGroupChatStore } from '../store/useGroupChatStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { axiosInstance } from '../lib/axios';
 
 export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
@@ -15,13 +15,14 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
   const debounceRef = useRef();
 
   const { createGroup } = useGroupChatStore();
+  const { authUser } = useAuthStore();
+  const me = currentUser || authUser;
 
   // Load users on mount
   useEffect(() => {
     const loadUsers = async () => {
       try {
         setLoading(true);
-        // Use the existing endpoint for getting users
         const res = await axiosInstance.get('/messages/users');
         const usersData = res.data;
         setUsers(usersData);
@@ -42,9 +43,9 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       const q = query.trim().toLowerCase();
-      const filtered = !q ? users : users.filter(u => 
-        (u.name || u.fullName || '').toLowerCase().includes(q)
-      );
+      const filtered = !q
+        ? users
+        : users.filter((u) => (u.name || u.fullName || '').toLowerCase().includes(q));
       setVisible(filtered);
     }, 150);
 
@@ -59,7 +60,7 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
   };
 
   const toggle = (id) => {
-    setSelectedIds(prev => {
+    setSelectedIds((prev) => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
       return next;
@@ -67,32 +68,28 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
   };
 
   const canCreate = selectedIds.size >= 2;
-  
+
   const onCreate = async () => {
     if (!canCreate) return toast('Pick at least 2 people ❗');
-    if (!currentUser) return toast.error('User not logged in');
+    if (!me?._id) return toast.error('User not logged in');
 
     try {
       setCreating(true);
-      
+
       // Include current user in members
-      const members = Array.from(new Set([...selectedIds, currentUser._id]));
-      
+      const members = Array.from(new Set([...selectedIds, me._id]));
+
       const groupData = {
         name: groupName || 'New Group',
-        members
+        members,
       };
 
       const result = await createGroup(groupData);
-      
+
       if (result && result.success) {
         toast.success('Group created ✔️');
         reset();
-        
-        // Call parent callback if provided
-        if (onGroupCreated) {
-          onGroupCreated(result.group);
-        }
+        if (onGroupCreated) onGroupCreated(result.group);
       }
     } catch (error) {
       console.error('Error creating group:', error);
@@ -104,9 +101,7 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
 
   const handleCancel = () => {
     reset();
-    if (onCancel) {
-      onCancel();
-    }
+    if (onCancel) onCancel();
   };
 
   if (loading) {
@@ -132,12 +127,10 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
         </div>
         <button
           className={`font-semibold ${
-            canCreate && !creating 
-              ? 'text-blue-800 hover:underline' 
-              : 'text-black/40 cursor-not-allowed'
+            canCreate && !creating ? 'text-blue-800 hover:underline' : 'text-black/40 cursor-not-allowed'
           }`}
           onClick={onCreate}
-          disabled={!canCreate || creating}
+          disabled={!canCreate || creating || !me?._id}
           title={!canCreate ? 'Pick at least 2 people' : 'Create group'}
         >
           {creating ? 'Creating...' : canCreate ? `Create (${selectedIds.size})` : 'Create'}
@@ -153,7 +146,18 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
           placeholder="Group Name (optional)"
           maxLength={50}
         />
-        <span className="text-black/60 select-none">{'>'}</span>
+        {/* Create button near the chevron location */}
+        <button
+          onClick={onCreate}
+          disabled={!canCreate || creating || !me?._id}
+          title={!canCreate ? 'Pick at least 2 people' : 'Create group'}
+          className={`px-3 py-1 rounded-md text-sm font-semibold transition
+            ${canCreate && !creating && me?._id
+              ? 'bg-blue-600 text-white hover:bg-blue-700'
+              : 'bg-black/10 text-black/50 cursor-not-allowed'}`}
+        >
+          {creating ? 'Creating…' : `Create${canCreate ? ` (${selectedIds.size})` : ''}`}
+        </button>
       </div>
 
       {/* Sticky Search */}
@@ -170,9 +174,7 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
       </div>
 
       {/* Available users label */}
-      <div className="px-4 pt-2 text-xs text-slate-500">
-        Available Users ({visible.length})
-      </div>
+      <div className="px-4 pt-2 text-xs text-slate-500">Available Users ({visible.length})</div>
 
       {/* Scrollable list area */}
       <div className="flex-1 overflow-auto">
@@ -182,21 +184,17 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
               onClick={() => toggle(u._id)}
               className="w-full px-4 py-3 flex items-center gap-3 hover:bg-slate-50 transition-colors"
             >
-              <img 
-                src={u.avatarUrl || u.profilePic || `https://i.pravatar.cc/100?u=${u._id}`} 
-                alt={u.name || u.fullName} 
-                className="h-9 w-9 rounded-full object-cover" 
+              <img
+                src={u.avatarUrl || u.profilePic || `https://i.pravatar.cc/100?u=${u._id}`}
+                alt={u.name || u.fullName}
+                className="h-9 w-9 rounded-full object-cover"
               />
               <div className="flex-1 text-left">
                 <div className="text-[15px] text-slate-900">{u.name || u.fullName}</div>
               </div>
-              {selectedIds.has(u._id) && (
-                <span className="text-green-600 text-lg">✔️</span>
-              )}
+              {selectedIds.has(u._id) && <span className="text-green-600 text-lg">✔️</span>}
             </button>
-            {idx < visible.length - 1 && (
-              <div className="mx-16 border-t border-slate-200" />
-            )}
+            {idx < visible.length - 1 && <div className="mx-16 border-t border-slate-200" />}
           </div>
         ))}
         {visible.length === 0 && (
