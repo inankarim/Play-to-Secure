@@ -10,10 +10,16 @@ import {
 
 const router = express.Router();
 
-//
-router.post("/gcreate",protectRoute, createGroup)
+// Debug middleware for group routes
+router.use((req, res, next) => {
+  console.log(`Group Route: ${req.method} ${req.path} - Body:`, req.body);
+  next();
+});
 
-// Get all groups the user is part of
+// Create a new group
+router.post("/gcreate", protectRoute, createGroup);
+
+// Get all groups the user is part of  
 router.get("/groups", protectRoute, getGroupsForSidebar);
 
 // Get all messages in a group
