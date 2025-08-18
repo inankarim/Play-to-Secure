@@ -39,20 +39,23 @@ All colors MUST be HSL.
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Brand and gradient tokens (HSL only) */
+    --brand: 12 75% 28%;
+    --gradient-page: linear-gradient(180deg, hsl(248 65% 90%) 0%, hsl(196 70% 84%) 100%);
+    --gradient-header-badge: linear-gradient(90deg, hsl(52 100% 62%) 0%, hsl(24 95% 48%) 100%);
+    --gradient-cta: linear-gradient(180deg, hsl(248 74% 78%) 0%, hsl(190 76% 72%) 100%);
+    --gradient-gray-panel: linear-gradient(90deg, hsl(0 0% 88%) 0%, hsl(0 0% 38%) 100%);
+    --gradient-info-card: linear-gradient(180deg, hsl(248 74% 78%) 0%, hsl(190 76% 72%) 100%);
+    --gradient-bonus: linear-gradient(90deg, hsl(248 74% 85%) 0%, hsl(0 0% 35%) 100%);
+    --gradient-code-label: linear-gradient(90deg, hsl(52 100% 62%) 0%, hsl(24 95% 48%) 100%);
 
     /* Figma-driven design tokens (placeholders; replace with exact HSL from Figma) */
     --gradient-header-angle: 135deg;
@@ -92,6 +95,69 @@ All colors MUST be HSL.
     --shadow-elev-2: 0 10px 30px hsl(var(--foreground) / 0.12);
 
     --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Code syntax highlighting */
+    --code-attr: 12 75% 60%;
+    --code-string: 152 60% 50%;
+    --code-keyword: 210 80% 70%;
+    --code-comment: 0 0% 70%;
+
+    /* Background radial gradient */
+    --bg-center: 272.74 62.3% 89.6%;
+    --bg-edge: 209.06 77.5% 84.3%;
+
+    /* Text colors */
+    --text-strong: 0 0% 20%;
+    --text-desc: 0 0% 0%;
+
+    /* Title gradient */
+    --title-grad-start: 46.85 100% 65.1%;
+    --title-grad-end: 28.6 88.4% 55.9%;
+
+    /* Prompt gradient */
+    --prompt-grad-start: 271.3 74.8% 83%;
+    --prompt-grad-end: 229.1 68.2% 65.3%;
+
+    /* Card gradients */
+    --card-top-start: 350.2 87.5% 80.8%;
+    --card-top-end: 333.9 81.5% 68.1%;
+    --card-bottom-start: 171.8 51.4% 74.9%;
+    --card-bottom-end: 196.9 75% 60.8%;
+
+    /* Darker strip gradients */
+    --card-top-strip-start: 350.2 87.5% 70%;
+    --card-top-strip-end: 333.9 81.5% 58%;
+    --card-bottom-strip-start: 171.8 51.4% 60%;
+    --card-bottom-strip-end: 196.9 75% 50%;
+
+    /* ExpertOpinion page tokens */
+    --bg-start: 235 100% 95%;
+    --bg-end: 285 100% 94%;
+    --warm-start: 49 100% 50%;
+    --warm-end: 24 100% 50%;
+    --quote-start: 210 100% 70%;
+    --quote-end: 225 100% 55%;
+    --panel: 225 20% 85%;
+    --panel-foreground: 230 60% 18%;
+    --success-green: 145 62% 35%;
+    --title-warm: 18 85% 35%;
+    --neutral-900: 220 20% 10%;
+    --btn-start: 246 100% 85%;
+    --btn-end: 190 75% 58%;
+
+    /* Quiz page tokens */
+    --quiz-ellipse-center: var(--bg-center);
+    --quiz-ellipse-edge: var(--bg-edge);
+    --quiz-title-start: 46.85 100% 65.1%;
+    --quiz-title-end: 28.6 88.4% 55.9%;
+    --quiz-q-start: 223 74% 62%;
+    --quiz-q-end: 223 64% 54%;
+    --quiz-pill-start: 315 80% 88%;
+    --quiz-pill-end: 255 65% 76%;
+    --quiz-pill-text: 0 0% 10%;
+    --quiz-pill-ring: 260 70% 60%;
+    --quiz-footer-start: 240 80% 85%;
+    --quiz-footer-shadow: 260 40% 40%;
   }
 
   .dark {
@@ -143,19 +209,8 @@ All colors MUST be HSL.
   }
 }
 
-:root {
-  /* Brand and gradient tokens (HSL only) */
-  --brand: 12 75% 28%;
-  --gradient-page: linear-gradient(180deg, hsl(248 65% 90%) 0%, hsl(196 70% 84%) 100%);
-  --gradient-header-badge: linear-gradient(90deg, hsl(52 100% 62%) 0%, hsl(24 95% 48%) 100%);
-  --gradient-cta: linear-gradient(180deg, hsl(248 74% 78%) 0%, hsl(190 76% 72%) 100%);
-  --gradient-gray-panel: linear-gradient(90deg, hsl(0 0% 88%) 0%, hsl(0 0% 38%) 100%);
-  --gradient-info-card: linear-gradient(180deg, hsl(248 74% 78%) 0%, hsl(190 76% 72%) 100%);
-  --gradient-bonus: linear-gradient(90deg, hsl(248 74% 85%) 0%, hsl(0 0% 35%) 100%);
-  --gradient-code-label: linear-gradient(90deg, hsl(52 100% 62%) 0%, hsl(24 95% 48%) 100%);
-}
-
 @layer utilities {
+  /* Page backgrounds and gradients */
   .bg-page { background: var(--gradient-page); }
   .bg-header-badge { background: var(--gradient-header-badge); }
   .bg-cta { background: var(--gradient-cta); }
@@ -164,23 +219,14 @@ All colors MUST be HSL.
   .bg-bonus { background: var(--gradient-bonus); }
   .bg-code-label { background: var(--gradient-code-label); }
   .text-brand { color: hsl(var(--brand)); }
-}
 
-:root {
-  --code-attr: 12 75% 60%;
-  --code-string: 152 60% 50%;
-  --code-keyword: 210 80% 70%;
-  --code-comment: 0 0% 70%;
-}
-@layer utilities {
+  /* Code syntax highlighting */
   .text-code-attr { color: hsl(var(--code-attr)); }
   .text-code-string { color: hsl(var(--code-string)); }
   .text-code-keyword { color: hsl(var(--code-keyword)); }
   .text-code-comment { color: hsl(var(--code-comment)); }
-}
 
-/* Additional utilities for Detailed Vulnerability layout */
-@layer utilities {
+  /* Detailed Vulnerability layout utilities */
   .bg-gradient-header {
     background-image: linear-gradient(var(--gradient-header-angle), hsl(var(--gradient-header-start)), hsl(var(--gradient-header-end)));
   }
@@ -212,40 +258,8 @@ All colors MUST be HSL.
   .shadow-fig-2 { box-shadow: var(--shadow-elev-2); }
 
   .code-panel { background-color: hsl(var(--code-panel-bg)); color: hsl(var(--code-panel-foreground)); }
-}
 
-/* Additional tokens and utilities for Common Vulnerabilities landing */
-:root {
-  /* Background radial gradient */
-  --bg-center: 272.74 62.3% 89.6%;
-  --bg-edge: 209.06 77.5% 84.3%;
-
-  /* Text colors */
-  --text-strong: 0 0% 20%;
-  --text-desc: 0 0% 0%;
-
-  /* Title gradient */
-  --title-grad-start: 46.85 100% 65.1%;
-  --title-grad-end: 28.6 88.4% 55.9%;
-
-  /* Prompt gradient */
-  --prompt-grad-start: 271.3 74.8% 83%;
-  --prompt-grad-end: 229.1 68.2% 65.3%;
-
-  /* Card gradients */
-  --card-top-start: 350.2 87.5% 80.8%;
-  --card-top-end: 333.9 81.5% 68.1%;
-  --card-bottom-start: 171.8 51.4% 74.9%;
-  --card-bottom-end: 196.9 75% 60.8%;
-
-  /* Darker strip gradients */
-  --card-top-strip-start: 350.2 87.5% 70%;
-  --card-top-strip-end: 333.9 81.5% 58%;
-  --card-bottom-strip-start: 171.8 51.4% 60%;
-  --card-bottom-strip-end: 196.9 75% 50%;
-}
-
-@layer utilities {
+  /* Common Vulnerabilities landing utilities */
   .bg-app-radial {
     background-image: radial-gradient(ellipse at center, hsl(var(--bg-center)) 0%, hsl(var(--bg-edge)) 100%);
   }
@@ -275,46 +289,8 @@ All colors MUST be HSL.
   .bg-spot {
     background-image: radial-gradient(circle at center, hsl(var(--bg-center) / 0.6) 0%, transparent 60%);
   }
-}
 
-/* ExpertOpinion page tokens */
-:root {
-  --bg-start: 235 100% 95%;
-  --bg-end: 285 100% 94%;
-
-  --warm-start: 49 100% 50%;
-  --warm-end: 24 100% 50%;
-
-  --quote-start: 210 100% 70%;
-  --quote-end: 225 100% 55%;
-
-  --panel: 225 20% 85%;
-  --panel-foreground: 230 60% 18%;
-
-  --success-green: 145 62% 35%;
-  --title-warm: 18 85% 35%;
-  --neutral-900: 220 20% 10%;
-
-  --btn-start: 246 100% 85%;
-  --btn-end: 190 75% 58%;
-}
-
-/* Quiz page tokens and utilities */
-:root {
-  --quiz-ellipse-center: var(--bg-center);
-  --quiz-ellipse-edge: var(--bg-edge);
-  --quiz-title-start: 46.85 100% 65.1%;
-  --quiz-title-end: 28.6 88.4% 55.9%;
-  --quiz-q-start: 223 74% 62%;
-  --quiz-q-end: 223 64% 54%;
-  --quiz-pill-start: 315 80% 88%;
-  --quiz-pill-end: 255 65% 76%;
-  --quiz-pill-text: 0 0% 10%;
-  --quiz-pill-ring: 260 70% 60%;
-  --quiz-footer-start: 240 80% 85%;
-  --quiz-footer-shadow: 260 40% 40%;
-}
-@layer utilities {
+  /* Quiz page utilities */
   .ellipse {
     width: min(96vw, 1200px);
     height: min(80vh, 680px);
@@ -366,4 +342,3 @@ All colors MUST be HSL.
   }
   .footer-btn:hover { filter: brightness(1.03); transform: translateY(-1px); }
 }
-
