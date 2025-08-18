@@ -37,6 +37,11 @@ export const signup = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         profilePic: newUser.profilePic,
+        universityName: newUser.universityName,
+        experienceLevel: newUser.experienceLevel,
+        totalPoints: newUser.totalPoints,
+        badgeCount: newUser.badgeCount,
+        createdAt: newUser.createdAt,
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -68,6 +73,11 @@ export const login = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      universityName: user.universityName,
+      experienceLevel: user.experienceLevel,
+      totalPoints: user.totalPoints,
+      badgeCount: user.badgeCount,
+      createdAt: user.createdAt,
     });
   } catch (error) {
     console.log("Error in login controller", error.message);
@@ -85,32 +95,73 @@ export const logout = (req, res) => {
   }
 };
 
+// FIXED UPDATE PROFILE FUNCTION
 export const updateProfile = async (req, res) => {
   try {
-    const { profilePic } = req.body;
+    const { profilePic, fullName, universityName, experienceLevel } = req.body;
     const userId = req.user._id;
+    const updateData = {};
 
-    if (!profilePic) {
-      return res.status(400).json({ message: "Profile pic is required" });
+    // Handle profile picture upload if provided
+    if (profilePic) {
+      try {
+        const uploadResponse = await cloudinary.uploader.upload(profilePic);
+        updateData.profilePic = uploadResponse.secure_url;
+      } catch (uploadError) {
+        console.log("Cloudinary upload error:", uploadError);
+        return res.status(400).json({ message: "Failed to upload image" });
+      }
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
+    // Handle other fields
+    if (fullName !== undefined) updateData.fullName = fullName;
+    if (universityName !== undefined) updateData.universityName = universityName;
+    if (experienceLevel !== undefined) updateData.experienceLevel = experienceLevel;
+
+    // Update user data
     const updatedUser = await User.findByIdAndUpdate(
       userId,
-      { profilePic: uploadResponse.secure_url },
+      updateData,
       { new: true }
-    );
+    ).select('-password');
 
-    res.status(200).json(updatedUser);
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return the updated user data with all necessary fields
+    res.status(200).json({
+      _id: updatedUser._id,
+      fullName: updatedUser.fullName,
+      email: updatedUser.email,
+      profilePic: updatedUser.profilePic,
+      universityName: updatedUser.universityName,
+      experienceLevel: updatedUser.experienceLevel,
+      totalPoints: updatedUser.totalPoints,
+      badgeCount: updatedUser.badgeCount,
+      createdAt: updatedUser.createdAt,
+    });
   } catch (error) {
     console.log("error in update profile:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
+// FIXED CHECK AUTH FUNCTION
 export const checkAuth = (req, res) => {
   try {
-    res.status(200).json(req.user);
+    const user = req.user;
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePic: user.profilePic,
+      universityName: user.universityName,
+      experienceLevel: user.experienceLevel,
+      totalPoints: user.totalPoints,
+      badgeCount: user.badgeCount,
+      createdAt: user.createdAt,
+    });
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
     res.status(500).json({ message: "Internal Server Error" });
