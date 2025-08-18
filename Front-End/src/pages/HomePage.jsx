@@ -1,5 +1,5 @@
 import { useChatStore } from "../store/useChatStore";
-import { useGroupChatStore } from "../store/useGroupChatStore";
+ import { useGroupChatStore } from "../store/useGroupChatStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { useState } from "react";
 import { MessageSquare, Users } from "lucide-react";
