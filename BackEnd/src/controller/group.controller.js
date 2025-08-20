@@ -2,7 +2,7 @@ import Group from "../models/group.model.js";
 import GroupMessage from "../models/group.message.js";
 import User from "../models/user.model.js";
 import { emitToGroup, notifyGroupMembers } from "../lib/socket.js";
-// import { v2 as cloudinary } from "cloudinary"; // Uncomment if using cloudinary
+import { v2 as cloudinary } from "cloudinary"; // Uncomment if using cloudinary
 
 export const createGroup = async (req, res) => {
   try {
@@ -195,9 +195,8 @@ export const sendGroupMessage = async (req, res) => {
     // Handle image upload
     if (image) {
       try {
-        // TODO: Implement proper image upload to Cloudinary
-        // const uploadResponse = await cloudinary.uploader.upload(image);
-        // imageUrl = uploadResponse.secure_url;
+        const uploadResponse = await cloudinary.uploader.upload(image);
+        imageUrl = uploadResponse.secure_url;
         imageUrl = image; // For now, use the image data directly
       } catch (uploadError) {
         console.error("Image upload error:", uploadError);

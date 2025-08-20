@@ -186,7 +186,7 @@ const Leaderboard = () => {
         <div className="text-center mb-10">
           <div className="flex items-center justify-center mb-4">
             <Users className="text-blue-600 mr-3" size={30} />
-            <h1 className="text-4xl font-bold text-gray-800">Leaderboard</h1>
+            <h1 className="text-4xl my-12 font-bold text-gray-800">Leaderboard</h1>
           </div>
         </div>
 

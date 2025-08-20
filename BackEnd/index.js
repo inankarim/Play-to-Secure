@@ -11,6 +11,7 @@ import authRoutes from "./src/routes/auth.route.js";
 import messageRoutes from "./src/routes/message.route.js";
 import groupRoutes from "./src/routes/group.route.js";
 import sqlRoutes from "./src/routes/sql.route.js";
+import postRoutes from "./src/routes/post.routes.js"; // New Facebook-style routes
 
 // Socket.IO app/server (already wires up group socket events)
 import { app, server } from "./src/lib/socket.js";
@@ -40,10 +41,13 @@ app.use("/api", groupRoutes);
 // SQL quiz endpoints: /api/quiz/...
 app.use("/api/quiz", sqlRoutes);
 
+// Facebook-style social media endpoints: /api/posts/...
+app.use("/api/posts", postRoutes);
+
 // Static files (production)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
-
+  
   // Express 5-compatible catch-all (avoid "*")
   app.get(/.*/, (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
