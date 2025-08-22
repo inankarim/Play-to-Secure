@@ -32,6 +32,16 @@ const Navbar = () => {
               <Settings className="w-4 h-4" />
               <span className="hidden sm:inline">Settings</span>
             </Link>
+           {!authUser && (<Link
+              to={"/admin"}
+              className={`
+              btn btn-sm gap-2 transition-colors
+              
+              `}
+            >
+              <User className="size-5" />
+              <span className="hidden sm:inline">Admin Login</span>
+            </Link>)}
 
             {authUser && (
               <>

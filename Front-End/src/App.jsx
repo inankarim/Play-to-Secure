@@ -1,64 +1,72 @@
 
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { Toaster } from "react-hot-toast";
+import { Loader } from "lucide-react";
+
 
 import Navbar from "./components/Navbar";
-import HomePage from "./pages/HomePage";
-import SignUpPage from "./pages/SignUpPage";
+import Dashboard from "./pages/Dashboard";
 import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
+import HomePage from "./pages/HomePage";
 import SettingsPage from "./pages/SettingsPage";
 import ProfilePage from "./pages/ProfilePage";
+
 import Dashboard from "./pages/Dashboard";
 import AttackDetails from "./pages/AttackDetails";
 
 import { Routes, Route, Navigate } from "react-router-dom";
+
+import Leaderboard from "./pages/Leaderboard";
+
+import AdminLoginPage from "./pages/AdminLoginPage";
+import AdminQuizPage from "./pages/AdminQuizPage";
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
-import { useEffect } from "react";
-import { Loader } from "lucide-react";
-import { Toaster } from "react-hot-toast";
-import Leaderboard from "./pages/Leaderboard";
 
 
 
 const App = () => {
-  const { authUser, checkAuth, isCheckingAuth, onlineUsers } = useAuthStore();
+  const location = useLocation();
   const { theme } = useThemeStore();
+  const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
 
-  console.log({ onlineUsers });
+  useEffect(() => { checkAuth(); }, [checkAuth]);
 
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  if (isCheckingAuth && !authUser) {
+    return <div className="flex items-center justify-center h-screen"><Loader className="size-10 animate-spin" /></div>;
+  }
 
-  console.log({ authUser });
-
-  if (isCheckingAuth && !authUser)
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader className="size-10 animate-spin" />
-      </div>
-    );
+  const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
     <div data-theme={theme}>
-      <Navbar />
+      {!isAdminRoute && <Navbar />}
 
       <Routes>
         <Route path="/" element={authUser ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/login" />} />
-
         <Route path="/chathome" element={authUser ? <HomePage /> : <Navigate to="/" />} />
+
         <Route path="/" element={authUser ? <Dashboard /> : <Navigate to="/login" />} />
         {/* <Route path="/quiz" element={authUser ? <QuizHomePage/> : <Navigate to="/login" />} /> */}
 
         {/* <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} /> */}
 
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+        <Route path="/leaderboard" element={authUser ? <Leaderboard /> : <Navigate to="/login" />} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<AdminLoginPage />} />
+        <Route path="/admin/quiz" element={<AdminQuizPage />} />
 
         <Route path="/attacks" element={<AttackDetails />} />
 
-        <Route path="/leaderboard" element={authUser ? <Leaderboard /> : <Navigate to="/login" />} />
+
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
       <Toaster />
