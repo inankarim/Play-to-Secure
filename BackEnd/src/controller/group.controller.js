@@ -1,8 +1,167 @@
+
 import Group from "../models/group.model.js";
 import GroupMessage from "../models/group.message.js";
 import User from "../models/user.model.js";
 import { emitToGroup, notifyGroupMembers } from "../lib/socket.js";
-import { v2 as cloudinary } from "cloudinary"; // Uncomment if using cloudinary
+// import { v2 as cloudinary } from "cloudinary"; // Uncomment if using cloudinary
+// Backend controller to handle group management functions
+// Add this to your group.controller.js file
+
+export const renameGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;
+    const { name } = req.body;
+    const requesterId = req.user._id;
+
+    console.log("Renaming group:", { groupId, name, requesterId });
+
+    // Validate input
+    if (!name || !name.trim()) {
+      return res.status(400).json({ 
+        message: "Group name is required and cannot be empty" 
+      });
+    }
+
+    const trimmedName = name.trim();
+
+    // Check name length
+    if (trimmedName.length < 1 || trimmedName.length > 50) {
+      return res.status(400).json({ 
+        message: "Group name must be between 1 and 50 characters" 
+      });
+    }
+
+    // Find the group
+    const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Check if the requester is the group creator
+    if (group.createdBy.toString() !== requesterId.toString()) {
+      return res.status(403).json({ 
+        message: "Only the group creator can rename the group" 
+      });
+    }
+
+    // Check if the new name is different from current name
+    if (group.name === trimmedName) {
+      return res.status(400).json({ 
+        message: "New name must be different from current name" 
+      });
+    }
+
+    // Update the group name
+    const oldName = group.name;
+    group.name = trimmedName;
+    group.updatedAt = new Date();
+    await group.save();
+
+    console.log(`Group renamed from "${oldName}" to "${trimmedName}"`);
+
+    // Populate the updated group
+    await group.populate("members", "name avatarUrl profilePic fullName");
+    await group.populate("createdBy", "name avatarUrl profilePic fullName");
+
+    // Notify all group members about the name change
+    const renamePayload = {
+      groupId,
+      oldName,
+      newName: trimmedName,
+      updatedBy: req.user.name || req.user.fullName,
+      group: group,
+      message: `Group name changed from "${oldName}" to "${trimmedName}" by ${req.user.name || req.user.fullName}`
+    };
+
+    emitToGroup(groupId, "groupRenamed", renamePayload);
+
+    console.log("Group rename notifications sent successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "Group renamed successfully",
+      group: group,
+      oldName,
+      newName: trimmedName
+    });
+  } catch (err) {
+    console.error("Error in renameGroup:", err);
+    return res.status(500).json({ 
+      message: "Internal Server Error",
+      error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
+  }
+};
+// Controller to handle leaving a group
+export const leaveGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;  // Group ID from request parameters
+    const userId = req.user._id;    // User ID from the authenticated session
+
+    const group = await Group.findById(groupId);  // Fetch the group from DB
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Ensure the user is part of the group
+    if (!group.members.includes(userId)) {
+      return res.status(400).json({ message: "You are not a member of this group" });
+    }
+
+    // Remove user from the group
+    group.members = group.members.filter(member => member.toString() !== userId.toString());
+    await group.save();  // Save the updated group
+
+    // Emit a notification to other members that the user has left
+    const notificationPayload = {
+      groupId,
+      message: `User has left the group`
+    };
+    emitToGroup(groupId, "userLeftGroup", notificationPayload);
+
+    return res.status(200).json({ message: "You have left the group successfully." });
+  } catch (error) {
+    console.error("Error leaving group:", error);  // Log the error for debugging
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+// Controller to handle removing a member from a group
+// Remove user from group functionality
+export const removeUserFromGroup = async (req, res) => {
+  try {
+    const { groupId } = req.params;        // Group ID from request parameters
+    const { userId } = req.body;           // User ID to be removed from request body
+    const requesterId = req.user._id;      // Requester's ID (the user who initiated the action)
+
+    const group = await Group.findById(groupId);  // Fetch the group from DB
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
+
+    // Check if the requester is the group creator
+    if (group.createdBy.toString() !== requesterId.toString()) {
+      return res.status(403).json({ message: "Only the group creator can remove members" });
+    }
+
+    // Remove user from the group's members
+    group.members = group.members.filter(member => member.toString() !== userId.toString());
+    await group.save();  // Save the updated group
+
+    // Emit a notification to other members that the user has been removed
+    const notificationPayload = {
+      groupId,
+      message: `${req.user.name} has removed ${userId} from the group`
+    };
+    emitToGroup(groupId, "userRemovedFromGroup", notificationPayload);  // Emit the event
+
+    return res.status(200).json({ message: "User has been removed from the group" });
+  } catch (error) {
+    console.error("Error removing user from group:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const createGroup = async (req, res) => {
   try {
@@ -195,8 +354,9 @@ export const sendGroupMessage = async (req, res) => {
     // Handle image upload
     if (image) {
       try {
-        const uploadResponse = await cloudinary.uploader.upload(image);
-        imageUrl = uploadResponse.secure_url;
+        // TODO: Implement proper image upload to Cloudinary
+        // const uploadResponse = await cloudinary.uploader.upload(image);
+        // imageUrl = uploadResponse.secure_url;
         imageUrl = image; // For now, use the image data directly
       } catch (uploadError) {
         console.error("Image upload error:", uploadError);

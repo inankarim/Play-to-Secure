@@ -13,6 +13,8 @@ import groupRoutes from "./src/routes/group.route.js";
 import sqlRoutes from "./src/routes/sql.route.js";
 import postRoutes from "./src/routes/post.routes.js"; // New Facebook-style routes
 
+import quoteRoutes from "./src/routes/quote.route.js"
+
 // Socket.IO app/server (already wires up group socket events)
 import { app, server } from "./src/lib/socket.js";
 
@@ -43,6 +45,11 @@ app.use("/api/quiz", sqlRoutes);
 
 // Facebook-style social media endpoints: /api/posts/...
 app.use("/api/post", postRoutes);
+
+
+//////////////
+//add the quotes route
+app.use("/api/quotes", quoteRoutes);
 
 // Static files (production)
 if (process.env.NODE_ENV === "production") {
