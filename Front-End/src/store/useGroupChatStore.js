@@ -17,7 +17,7 @@ export const useGroupChatStore = create((set, get) => ({
     set({ isGroupsLoading: true });
     try {
       console.log("🔄 Fetching groups...");
-      const res = await axiosInstance.get("/groups");
+      const res = await axiosInstance.get("/group");
       console.log("✅ Groups fetched:", res.data);
       set({ groups: res.data });
       return res.data;
@@ -113,7 +113,7 @@ export const useGroupChatStore = create((set, get) => ({
     set({ isCreatingGroup: true });
     try {
       console.log("🔄 Creating group:", groupData);
-      const res = await axiosInstance.post("/gcreate", groupData);
+      const res = await axiosInstance.post("/group/gcreate", groupData);
       console.log("✅ Group creation response:", res.data);
 
       if (res.data.success) {

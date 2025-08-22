@@ -20,15 +20,15 @@ router.use((req, res, next) => {
 router.post("/gcreate", protectRoute, createGroup);
 
 // Get all groups the user is part of  
-router.get("/groups", protectRoute, getGroupsForSidebar);
+router.get("/", protectRoute, getGroupsForSidebar);
 
 // Get all messages in a group
-router.get("/group/:groupId/messages", protectRoute, getGroupMessages);
+router.get("/:groupId/messages", protectRoute, getGroupMessages);
 
 // Send a message in a group
-router.post("/group/:groupId/send", protectRoute, sendGroupMessage);
+router.post("/:groupId/send", protectRoute, sendGroupMessage);
 
 // Add a user to a group
-router.put("/group/:groupId/addUser", protectRoute, addUserToGroup);
+router.put("/:groupId/addUser", protectRoute, addUserToGroup);
 
 export default router;

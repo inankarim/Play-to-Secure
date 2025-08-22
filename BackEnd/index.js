@@ -36,13 +36,13 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
 // Mount all group endpoints like /api/groups, /api/group/:groupId/...
-app.use("/api", groupRoutes);
+app.use("/api/group", groupRoutes);
 
 // SQL quiz endpoints: /api/quiz/...
 app.use("/api/quiz", sqlRoutes);
 
 // Facebook-style social media endpoints: /api/posts/...
-app.use("/api/posts", postRoutes);
+app.use("/api/post", postRoutes);
 
 // Static files (production)
 if (process.env.NODE_ENV === "production") {

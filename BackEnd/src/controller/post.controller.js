@@ -517,143 +517,104 @@ export const deleteComment = async (req, res) => {
 
 // ============ REACTION CONTROLLERS ============
 
+// ============ REACTION CONTROLLERS (fixed) ============
+
 export const addOrUpdateReaction = async (req, res) => {
   try {
-    const { id: targetId } = req.params;
-    const { type, targetType } = req.body; // targetType: 'post' or 'comment'
+    const targetId = req.params.id || req.params.commentId;   // <- works for both routes
+    const { type, targetType } = req.body;                    // 'post' | 'comment'
     const userId = req.user._id;
 
-    const validTypes = ['love', 'like', 'funny', 'horror'];
-    const validTargetTypes = ['post', 'comment'];
-
-    if (!validTypes.includes(type)) {
-      return res.status(400).json({ error: "Invalid reaction type" });
+    if (!mongoose.isValidObjectId(targetId)) {
+      return res.status(400).json({ error: "Invalid target id" });
     }
 
-    if (!validTargetTypes.includes(targetType)) {
-      return res.status(400).json({ error: "Invalid target type" });
-    }
+    const validTypes = ["love", "like", "funny", "horror"];
+    const validTargets = ["post", "comment"];
+    if (!validTypes.includes(type)) return res.status(400).json({ error: "Invalid reaction type" });
+    if (!validTargets.includes(targetType)) return res.status(400).json({ error: "Invalid target type" });
 
-    // Check if target exists
-    const target = targetType === 'post' 
-      ? await Post.findById(targetId)
-      : await Comment.findById(targetId);
+    const TargetModel = targetType === "post" ? Post : Comment;
+    const target = await TargetModel.findById(targetId);
+    if (!target) return res.status(404).json({ error: `${targetType} not found` });
 
-    if (!target) {
-      return res.status(404).json({ error: `${targetType} not found` });
-    }
+    let reaction = await Reaction.findOne({ userId, targetId, targetType });
 
-    // Check if user already has a reaction
-    const existingReaction = await Reaction.findOne({ 
-      userId, 
-      targetId, 
-      targetType 
-    });
-
-    if (existingReaction) {
-      if (existingReaction.type === type) {
-        // Same reaction - remove it
-        await Reaction.findByIdAndDelete(existingReaction._id);
+    if (reaction) {
+      if (reaction.type === type) {
+        // same reaction -> remove
+        await Reaction.findByIdAndDelete(reaction._id);
         await updateReactionCounts(targetId, targetType);
-        
-        const updatedCounts = await getReactionCounts(targetId, targetType);
-        
-        return res.status(200).json({
-          message: "Reaction removed",
-          userReaction: null,
-          reactionCounts: updatedCounts
-        });
-      } else {
-        // Different reaction - update it
-        existingReaction.type = type;
-        await existingReaction.save();
-        
-        await updateReactionCounts(targetId, targetType);
-        const updatedCounts = await getReactionCounts(targetId, targetType);
-        
-        return res.status(200).json({
-          message: `Reaction changed to ${type}`,
-          userReaction: type,
-          reactionCounts: updatedCounts
-        });
+        const counts = await getReactionCounts(targetId, targetType);
+        return res.status(200).json({ message: "Reaction removed", userReaction: null, reactionCounts: counts });
       }
+      // change reaction
+      reaction.type = type;
+      await reaction.save();
     } else {
-      // Create new reaction
-      const newReaction = new Reaction({ userId, targetId, targetType, type });
-      await newReaction.save();
-      
-      await updateReactionCounts(targetId, targetType);
-      const updatedCounts = await getReactionCounts(targetId, targetType);
-      
-      return res.status(201).json({
-        message: `${type} reaction added`,
-        userReaction: type,
-        reactionCounts: updatedCounts
-      });
+      // add new
+      await new Reaction({ userId, targetId, targetType, type }).save();
     }
-  } catch (error) {
-    console.error("Error in addOrUpdateReaction controller: ", error.message);
+
+    await updateReactionCounts(targetId, targetType);
+    const counts = await getReactionCounts(targetId, targetType);
+    return res.status(reaction ? 200 : 201).json({
+      message: `${reaction ? "Reaction changed to" : "Added"} ${type}`,
+      userReaction: type,
+      reactionCounts: counts,
+    });
+  } catch (err) {
+    console.error("addOrUpdateReaction error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export const removeReaction = async (req, res) => {
   try {
-    const { id: targetId } = req.params;
-    const { targetType } = req.body;
+    const targetId = req.params.id || req.params.commentId;
+    const { targetType } = req.body; // 'post' | 'comment'
     const userId = req.user._id;
 
-    const existingReaction = await Reaction.findOneAndDelete({ 
-      userId, 
-      targetId, 
-      targetType 
-    });
-    
-    if (!existingReaction) {
-      return res.status(404).json({ error: "No reaction found to remove" });
+    if (!mongoose.isValidObjectId(targetId)) {
+      return res.status(400).json({ error: "Invalid target id" });
     }
+    const validTargets = ["post", "comment"];
+    if (!validTargets.includes(targetType)) return res.status(400).json({ error: "Invalid target type" });
+
+    const deleted = await Reaction.findOneAndDelete({ userId, targetId, targetType });
+    if (!deleted) return res.status(404).json({ error: "No reaction found to remove" });
 
     await updateReactionCounts(targetId, targetType);
-    const updatedCounts = await getReactionCounts(targetId, targetType);
-
-    res.status(200).json({
-      message: "Reaction removed successfully",
-      userReaction: null,
-      reactionCounts: updatedCounts
-    });
-  } catch (error) {
-    console.error("Error in removeReaction controller: ", error.message);
+    const counts = await getReactionCounts(targetId, targetType);
+    res.status(200).json({ message: "Reaction removed successfully", userReaction: null, reactionCounts: counts });
+  } catch (err) {
+    console.error("removeReaction error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };
 
 export const getReactions = async (req, res) => {
   try {
-    const { id: targetId } = req.params;
-    const { targetType, type } = req.query;
+    const targetId = req.params.id || req.params.commentId;
+    const { targetType, type } = req.query; // targetType required
 
-    let query = { targetId, targetType };
-    if (type && ['love', 'like', 'funny', 'horror'].includes(type)) {
-      query.type = type;
+    if (!mongoose.isValidObjectId(targetId)) {
+      return res.status(400).json({ error: "Invalid target id" });
     }
+    const validTargets = ["post", "comment"];
+    if (!validTargets.includes(targetType)) return res.status(400).json({ error: "Invalid target type" });
+
+    const query = { targetId, targetType };
+    if (type && ["love", "like", "funny", "horror"].includes(type)) query.type = type;
 
     const reactions = await Reaction.find(query)
       .populate("userId", "fullName profilePic")
       .sort({ createdAt: -1 })
       .lean();
 
-    const reactionsByType = {
-      love: [],
-      like: [],
-      funny: [],
-      horror: []
-    };
-
-    reactions.forEach(reaction => {
-      reactionsByType[reaction.type].push({
-        user: reaction.userId,
-        reactedAt: reaction.createdAt
-      });
+    const reactionsByType = { love: [], like: [], funny: [], horror: [] };
+    reactions.forEach(r => {
+      reactionsByType[r.type].push({ user: r.userId, reactedAt: r.createdAt });
     });
 
     const reactionCounts = await getReactionCounts(targetId, targetType);
@@ -663,10 +624,10 @@ export const getReactions = async (req, res) => {
       targetType,
       reactionCounts,
       reactionsByType,
-      totalReactions: reactions.length
+      totalReactions: reactions.length,
     });
-  } catch (error) {
-    console.error("Error in getReactions controller: ", error.message);
+  } catch (err) {
+    console.error("getReactions error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };

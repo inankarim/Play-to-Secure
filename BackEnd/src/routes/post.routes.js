@@ -8,21 +8,21 @@ import {
   getUserPosts,
   updatePost,
   deletePost,
-  
+
   // Comment Controllers
   createComment,
   getComments,
   getReplies,
   updateComment,
   deleteComment,
-  
+
   // Reaction Controllers
   addOrUpdateReaction,
   removeReaction,
-  getReactions
+  getReactions,
 } from "../controller/post.controller.js";
 
-import { protectRoute } from "../middleware/auth.middleware.js"; // Your auth middleware
+import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -32,7 +32,7 @@ const router = express.Router();
 router.post("/", protectRoute, createPost);
 
 // Get all posts (with pagination)
-router.get("/", protectRoute, getPosts);
+router.get("/getpost", protectRoute, getPosts);
 
 // Get specific post by ID
 router.get("/:id", protectRoute, getPostById);
@@ -64,14 +64,14 @@ router.put("/comments/:commentId", protectRoute, updateComment);
 router.delete("/comments/:commentId", protectRoute, deleteComment);
 
 // ============ REACTION ROUTES ============
-
-// Add/Update reaction on post or comment
+// Post reactions
 router.post("/:id/reactions", protectRoute, addOrUpdateReaction);
-
-// Remove reaction from post or comment
 router.delete("/:id/reactions", protectRoute, removeReaction);
-
-// Get all reactions for a post or comment
 router.get("/:id/reactions", protectRoute, getReactions);
+
+// Comment reactions
+router.post("/comments/:commentId/reactions", protectRoute, addOrUpdateReaction);
+router.delete("/comments/:commentId/reactions", protectRoute, removeReaction);
+router.get("/comments/:commentId/reactions", protectRoute, getReactions);
 
 export default router;
