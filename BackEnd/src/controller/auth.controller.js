@@ -28,8 +28,8 @@ export const signup = async (req, res) => {
     });
 
     if (newUser) {
-      // generate jwt token here
-      generateToken(newUser._id, res);
+      // Generate JWT token
+      const token = generateToken(newUser._id, res);
       await newUser.save();
 
       res.status(201).json({
@@ -42,6 +42,7 @@ export const signup = async (req, res) => {
         totalPoints: newUser.totalPoints,
         badgeCount: newUser.badgeCount,
         createdAt: newUser.createdAt,
+        token, // Send the token in the response to be used on the frontend
       });
     } else {
       res.status(400).json({ message: "Invalid user data" });
@@ -66,7 +67,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    generateToken(user._id, res);
+    const token = generateToken(user._id, res);
 
     res.status(200).json({
       _id: user._id,
@@ -78,6 +79,7 @@ export const login = async (req, res) => {
       totalPoints: user.totalPoints,
       badgeCount: user.badgeCount,
       createdAt: user.createdAt,
+      token, // Send the token in the response
     });
   } catch (error) {
     console.log("Error in login controller", error.message);
@@ -147,7 +149,6 @@ export const updateProfile = async (req, res) => {
   }
 };
 
-// FIXED CHECK AUTH FUNCTION
 export const checkAuth = (req, res) => {
   try {
     const user = req.user;
@@ -164,6 +165,20 @@ export const checkAuth = (req, res) => {
     });
   } catch (error) {
     console.log("Error in checkAuth controller", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// Get active users count in the last 30 minutes
+
+export const getActiveUsersCount = async (req, res) => {
+  try {
+    const activeUsersCount = await User.countDocuments({
+      lastActive: { $gte: new Date(Date.now() - 3600000) } // Active in the last 1 hour
+    });
+    res.status(200).json({ activeUsersCount });
+  } catch (error) {
+    console.log("Error in getting active users count:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -64,7 +64,13 @@ const userSchema = new mongoose.Schema(
     completedLevels: [{
       type: String,
       enum: ['Easy', 'Medium', 'Hard']
-    }]
+    }],
+    // lastActive field
+    lastActive: {
+      type: Date,
+      default: Date.now
+    }
+
   },
   { timestamps: true }
 );
@@ -112,6 +118,14 @@ userSchema.methods.updateExperienceLevel = function() {
   }
   return this.save();
 };
+
+// Update lastActive whenever the user logs in or interacts
+userSchema.pre('save', function(next) {
+  if (this.isModified('lastActive')) {
+    this.lastActive = Date.now();
+  }
+  next();
+});
 
 const User = mongoose.model("User", userSchema);
 
