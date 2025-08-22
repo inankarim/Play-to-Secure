@@ -25,7 +25,11 @@ import AdminQuizPage from "./pages/AdminQuizPage";
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
 
-
+import { useEffect } from "react";
+import { Loader } from "lucide-react";
+import { Toaster } from "react-hot-toast";
+import Leaderboard from "./pages/Leaderboard";
+import PostPage from "./pages/PostPage";  // Import PostPage component
 
 const App = () => {
   const location = useLocation();
@@ -46,18 +50,30 @@ const App = () => {
 
       <Routes>
         <Route path="/" element={authUser ? <Dashboard /> : <Navigate to="/login" />} />
+
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/login" />} />
+
         <Route path="/chathome" element={authUser ? <HomePage /> : <Navigate to="/" />} />
 
         <Route path="/" element={authUser ? <Dashboard /> : <Navigate to="/login" />} />
+
+        <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+
         {/* <Route path="/quiz" element={authUser ? <QuizHomePage/> : <Navigate to="/login" />} /> */}
 
         {/* <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} /> */}
+
 
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
         <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
         <Route path="/settings" element={<SettingsPage />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/leaderboard" element={authUser ? <Leaderboard /> : <Navigate to="/login" />} />
+
+        
+        {/* Add the PostPage route */}
+        <Route path="/posts" element={authUser ? <PostPage /> : <Navigate to="/login" />} /> {/* New PostPage route */}
+
 
         {/* Admin */}
         <Route path="/admin" element={<AdminLoginPage />} />
@@ -67,6 +83,7 @@ const App = () => {
 
 
         <Route path="*" element={<Navigate to="/" replace />} />
+
       </Routes>
 
       <Toaster />

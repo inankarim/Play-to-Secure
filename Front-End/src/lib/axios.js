@@ -1,11 +1,10 @@
-
 import axios from "axios";
 
 // Create axios instance with correct configuration
 export const axiosInstance = axios.create({
   baseURL: import.meta.env.MODE === "development" ? "http://localhost:5001/api" : "/api",
   withCredentials: true,
-  timeout: 10000, // 10 seconds timeout
+  timeout: 30000, // 30 seconds timeout (increased from 10 seconds)
   headers: {
     'Content-Type': 'application/json',
   }
@@ -26,7 +25,7 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Add response interceptor for debugging
+// Add response interceptor for debugging and better error handling
 axiosInstance.interceptors.response.use(
   (response) => {
     console.log(`✅ API Response: ${response.config.method?.toUpperCase()} ${response.config.url}`, {
@@ -36,13 +35,35 @@ axiosInstance.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('❌ API Error:', {
-      method: error.config?.method?.toUpperCase(),
-      url: error.config?.url,
-      status: error.response?.status,
-      message: error.response?.data?.message || error.message,
-      data: error.response?.data
-    });
+    // Handle different types of errors
+    if (error.code === 'ECONNABORTED') {
+      console.error('❌ Request Timeout:', {
+        method: error.config?.method?.toUpperCase(),
+        url: error.config?.url,
+        timeout: error.config?.timeout,
+        message: 'Request timed out'
+      });
+    } else if (error.response) {
+      // Server responded with error status
+      console.error('❌ API Error:', {
+        method: error.config?.method?.toUpperCase(),
+        url: error.config?.url,
+        status: error.response?.status,
+        message: error.response?.data?.message || error.message,
+        data: error.response?.data
+      });
+    } else if (error.request) {
+      // Request made but no response received
+      console.error('❌ Network Error:', {
+        method: error.config?.method?.toUpperCase(),
+        url: error.config?.url,
+        message: 'No response received from server'
+      });
+    } else {
+      // Something else happened
+      console.error('❌ Request Setup Error:', error.message);
+    }
+    
     return Promise.reject(error);
   }
 );
