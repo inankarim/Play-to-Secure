@@ -33,13 +33,14 @@ const Navbar = () => {
             </Link>)}
 
             {/* Corrected to List icon */}
-            <Link to={"/posts"} className="btn btn-sm gap-2 transition-colors">
-              <List className="w-4 h-4" /> {/* Use List icon instead of Feed */}
-              <span className="hidden sm:inline">Posts</span>
-            </Link>
+            
 
             {authUser && (
               <>
+                <Link to={"/posts"} className="btn btn-sm gap-2 transition-colors">
+              <List className="w-4 h-4" /> {/* Use List icon instead of Feed */}
+              <span className="hidden sm:inline">Posts</span>
+            </Link>
                 <Link to={"/profile"} className={`btn btn-sm gap-2`}>
                   <User className="size-5" />
                   <span className="hidden sm:inline">Profile</span>
