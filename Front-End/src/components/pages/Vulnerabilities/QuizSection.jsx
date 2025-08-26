@@ -69,7 +69,7 @@ export const QuizSection = () => {
       <section className="self-center flex w-full justify-center mt-10">
         <button
           onClick={startQuiz}
-          className="gradient-cta text-white font-bold uppercase tracking-wide py-3 px-10 rounded-[10px] transition-opacity duration-200 hover:opacity-90"
+          className="bg-cta text-primary-foreground font-bold uppercase tracking-wide py-3 px-10 rounded-[10px] transition-opacity duration-200 hover:opacity-90"
           aria-label="Open quiz"
         >
           QUIZ
@@ -80,12 +80,12 @@ export const QuizSection = () => {
 
   if (showResult) {
     return (
-      <section className="self-center flex flex-col items-center max-w-md mx-auto mt-[29px] p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold mb-4 text-gray-900">Quiz Complete!</h2>
-        <div className="text-xl mb-4 text-gray-700">
+      <section className="self-center flex flex-col items-center max-w-md mx-auto mt-[29px] p-6 bg-card text-card-foreground rounded-lg shadow-lg border border-border">
+        <h2 className="text-2xl font-bold mb-4">Quiz Complete!</h2>
+        <div className="text-xl mb-4">
           Your Score: {score} / {quizQuestions.length}
         </div>
-        <div className="text-lg mb-6 text-center text-gray-600">
+        <div className="text-lg mb-6 text-center text-muted-foreground">
           {score === quizQuestions.length 
             ? "Perfect! You have excellent knowledge of web security vulnerabilities."
             : score >= quizQuestions.length / 2
@@ -94,7 +94,7 @@ export const QuizSection = () => {
         </div>
         <button
           onClick={resetQuiz}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded transition-colors duration-200"
+          className="bg-primary text-primary-foreground font-bold py-2 px-4 rounded transition-colors duration-200 hover:brightness-105"
         >
           Take Quiz Again
         </button>
@@ -105,54 +105,54 @@ export const QuizSection = () => {
   const question = quizQuestions[currentQuestion];
 
   return (
-    <section className="self-center flex flex-col items-center max-w-2xl mx-auto mt-[29px] p-6 bg-white rounded-lg shadow-lg">
-      <div className="w-full mb-4">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-900">Security Quiz</h2>
-          <span className="text-sm text-gray-600">
-            Question {currentQuestion + 1} of {quizQuestions.length}
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-          <div 
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentQuestion + 1) / quizQuestions.length) * 100}%` }}
-          ></div>
-        </div>
+  <section className="self-center flex flex-col items-center max-w-2xl mx-auto mt-[29px] p-6 bg-card text-card-foreground rounded-lg shadow-lg border border-border">
+    <div className="w-full mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Security Quiz</h2>
+        <span className="text-sm text-muted-foreground">
+          Question {currentQuestion + 1} of {quizQuestions.length}
+        </span>
       </div>
-
-      <h3 className="text-lg font-semibold mb-6 text-center text-gray-900">
-        {question.question}
-      </h3>
-
-      <div className="w-full space-y-3 mb-6">
-        {question.options.map((option, index) => (
-          <button
-            key={index}
-            onClick={() => handleAnswerSelect(index)}
-            className={`w-full p-3 text-left rounded-lg border transition-colors duration-200 ${
-              selectedAnswer === index
-                ? 'bg-blue-100 border-blue-500 text-blue-900'
-                : 'bg-gray-50 border-gray-300 hover:bg-gray-100 text-gray-700'
-            }`}
-          >
-            {option}
-          </button>
-        ))}
+      <div className="w-full bg-muted rounded-full h-2 mb-6">
+        <div 
+          className="bg-primary h-2 rounded-full transition-all duration-300"
+          style={{ width: `${((currentQuestion + 1) / quizQuestions.length) * 100}%` }}
+        ></div>
       </div>
+    </div>
 
-      <button
-        onClick={handleNextQuestion}
-        disabled={selectedAnswer === null}
-        className={`px-6 py-2 rounded font-semibold transition-colors duration-200 ${
-          selectedAnswer !== null
-            ? 'bg-blue-500 hover:bg-blue-600 text-white'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-        }`}
-      >
-        {currentQuestion + 1 === quizQuestions.length ? 'Finish Quiz' : 'Next Question'}
-      </button>
-    </section>
+    <h3 className="text-lg font-semibold mb-6 text-center">
+      {question.question}
+    </h3>
+
+    <div className="w-full space-y-3 mb-6">
+      {question.options.map((option, index) => (
+        <button
+          key={index}
+          onClick={() => handleAnswerSelect(index)}
+          className={`w-full p-3 text-left rounded-lg border transition-colors duration-200 ${
+            selectedAnswer === index
+              ? 'bg-accent border-accent text-accent-foreground'
+              : 'bg-background border-border hover:bg-muted text-foreground'
+          }`}
+        >
+          {option}
+        </button>
+      ))}
+    </div>
+
+    <button
+      onClick={handleNextQuestion}
+      disabled={selectedAnswer === null}
+      className={`px-6 py-2 rounded font-semibold transition-colors duration-200 ${
+        selectedAnswer !== null
+          ? 'bg-primary hover:brightness-110 text-primary-foreground'
+          : 'bg-muted text-muted-foreground cursor-not-allowed'
+      }`}
+    >
+      {currentQuestion + 1 === quizQuestions.length ? 'Finish Quiz' : 'Next Question'}
+    </button>
+  </section>
   );
 };
 

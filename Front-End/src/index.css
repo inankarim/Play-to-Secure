@@ -57,7 +57,7 @@ All colors MUST be HSL.
     --gradient-bonus: linear-gradient(90deg, hsl(248 74% 85%) 0%, hsl(0 0% 35%) 100%);
     --gradient-code-label: linear-gradient(90deg, hsl(52 100% 62%) 0%, hsl(24 95% 48%) 100%);
 
-    /* Figma-driven design tokens (placeholders; replace with exact HSL from Figma) */
+    /* Figma-driven design tokens */
     --gradient-header-angle: 135deg;
     --gradient-header-start: 32 98% 54%;
     --gradient-header-end: 45 100% 62%;
@@ -188,6 +188,7 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -341,4 +342,32 @@ All colors MUST be HSL.
     transition: filter 0.2s ease, transform 0.2s ease;
   }
   .footer-btn:hover { filter: brightness(1.03); transform: translateY(-1px); }
+  
+  /* Game-specific animations */
+  .animate-dash {
+    animation: dash 20s linear infinite;
+  }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  /* Story link positioning */
+  .story-link {
+    position: relative;
+  }
+  
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -100;
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translate(-50%, -70%) translateY(0px);
+    }
+    50% {
+      transform: translate(-50%, -70%) translateY(-5px);
+    }
+  }
 }

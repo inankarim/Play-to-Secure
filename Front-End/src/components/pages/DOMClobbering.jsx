@@ -1,11 +1,11 @@
 import React from 'react';
-import Index from '@/components/pages/Index';
+import DOMClobberingIndex from '@/components/pages/DOMClobberingIndex';
 
 const DOMClobberingPage = () => {
   React.useEffect(() => {
     document.title = 'DOM Clobbering';
   }, []);
-  return <Index />;
+  return <DOMClobberingIndex />;
 };
 
 export default DOMClobberingPage;

@@ -1,5 +1,5 @@
 import React from 'react';
-import ExpertOpinionIndex from '@/components/ExpertOpinion/Index';
+import ExpertOpinionIndex from '@/components/ExpertOpinion/ExpertOpinionIndex';
 
 const ExpertOpinionPage = () => {
   return <ExpertOpinionIndex />;
