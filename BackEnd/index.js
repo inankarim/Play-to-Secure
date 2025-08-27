@@ -12,7 +12,7 @@ import messageRoutes from "./src/routes/message.route.js";
 import groupRoutes from "./src/routes/group.route.js";
 import sqlRoutes from "./src/routes/sql.route.js";
 import postRoutes from "./src/routes/post.routes.js"; // New Facebook-style routes
-
+import quizRoutes from "./src/routes/quiz.route.js";
 import quoteRoutes from "./src/routes/quote.route.js"
 
 // Socket.IO app/server (already wires up group socket events)
@@ -47,10 +47,12 @@ app.use("/api/quiz", sqlRoutes);
 app.use("/api/post", postRoutes);
 
 
+
 //////////////
 //add the quotes route
 app.use("/api/quotes", quoteRoutes);
 
+app.use("/api/quiz/flow", quizRoutes);
 // Static files (production)
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));

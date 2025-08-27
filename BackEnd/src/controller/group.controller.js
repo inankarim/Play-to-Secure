@@ -3,7 +3,7 @@ import Group from "../models/group.model.js";
 import GroupMessage from "../models/group.message.js";
 import User from "../models/user.model.js";
 import { emitToGroup, notifyGroupMembers } from "../lib/socket.js";
-// import { v2 as cloudinary } from "cloudinary"; // Uncomment if using cloudinary
+import { v2 as cloudinary } from "cloudinary"; // Uncomment if using cloudinary
 // Backend controller to handle group management functions
 // Add this to your group.controller.js file
 
