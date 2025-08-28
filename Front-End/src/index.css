@@ -1,3 +1,397 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 222.2 84% 4.9%;
+
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 98%;
+
+    --sidebar-foreground: 240 5.3% 26.1%;
+
+    --sidebar-primary: 240 5.9% 10%;
+
+    --sidebar-primary-foreground: 0 0% 98%;
+
+    --sidebar-accent: 240 4.8% 95.9%;
+
+    --sidebar-accent-foreground: 240 5.9% 10%;
+
+    --sidebar-border: 220 13% 91%;
+
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Figma-driven design tokens (placeholders; replace with exact HSL from Figma) */
+    --gradient-header-angle: 135deg;
+    --gradient-header-start: 32 98% 54%;
+    --gradient-header-end: 45 100% 62%;
+
+    --button-gradient-start: 220 90% 56%;
+    --button-gradient-end: 245 82% 60%;
+    --button-foreground: 0 0% 100%;
+
+    --label-danger: 0 82% 50%;
+    --label-success: 145 55% 40%;
+
+    /* Paste-style info panels */
+    --info-blue-start: 215 86% 65%;
+    --info-blue-end: 220 78% 60%;
+
+    /* Instructional block background */
+    --instruction-bg-start: 235 70% 92%;
+    --instruction-bg-end: 260 65% 90%;
+
+    /* Grey tip box */
+    --tip-grey: 220 4% 66%;
+
+    /* Code title bars (orange/gold) */
+    --code-title-start: 50 100% 62%;
+    --code-title-end: 30 100% 50%;
+    --code-title-foreground: 0 0% 10%;
+
+    /* Code panel */
+    --code-panel-bg: 220 10% 10%;
+    --code-panel-foreground: 0 0% 98%;
+
+    --radius-panel: 1rem;
+
+    --shadow-elev-1: 0 6px 18px hsl(var(--foreground) / 0.08);
+    --shadow-elev-2: 0 10px 30px hsl(var(--foreground) / 0.12);
+
+    --transition-smooth: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+:root {
+  /* Brand and gradient tokens (HSL only) */
+  --brand: 12 75% 28%;
+  --gradient-page: linear-gradient(180deg, hsl(248 65% 90%) 0%, hsl(196 70% 84%) 100%);
+  --gradient-header-badge: linear-gradient(90deg, hsl(52 100% 62%) 0%, hsl(24 95% 48%) 100%);
+  --gradient-cta: linear-gradient(180deg, hsl(248 74% 78%) 0%, hsl(190 76% 72%) 100%);
+  --gradient-gray-panel: linear-gradient(90deg, hsl(0 0% 88%) 0%, hsl(0 0% 38%) 100%);
+  --gradient-info-card: linear-gradient(180deg, hsl(248 74% 78%) 0%, hsl(190 76% 72%) 100%);
+  --gradient-bonus: linear-gradient(90deg, hsl(248 74% 85%) 0%, hsl(0 0% 35%) 100%);
+  --gradient-code-label: linear-gradient(90deg, hsl(52 100% 62%) 0%, hsl(24 95% 48%) 100%);
+}
+
+@layer utilities {
+  .bg-page { background: var(--gradient-page); }
+  .bg-header-badge { background: var(--gradient-header-badge); }
+  .bg-cta { background: var(--gradient-cta); }
+  .bg-gray-panel { background: var(--gradient-gray-panel); }
+  .bg-info-card { background: var(--gradient-info-card); }
+  .bg-bonus { background: var(--gradient-bonus); }
+  .bg-code-label { background: var(--gradient-code-label); }
+  .text-brand { color: hsl(var(--brand)); }
+}
+
+:root {
+  --code-attr: 12 75% 60%;
+  --code-string: 152 60% 50%;
+  --code-keyword: 210 80% 70%;
+  --code-comment: 0 0% 70%;
+}
+@layer utilities {
+  .text-code-attr { color: hsl(var(--code-attr)); }
+  .text-code-string { color: hsl(var(--code-string)); }
+  .text-code-keyword { color: hsl(var(--code-keyword)); }
+  .text-code-comment { color: hsl(var(--code-comment)); }
+}
+
+/* Additional utilities for Detailed Vulnerability layout */
+@layer utilities {
+  .bg-gradient-header {
+    background-image: linear-gradient(var(--gradient-header-angle), hsl(var(--gradient-header-start)), hsl(var(--gradient-header-end)));
+  }
+
+  .bg-instruction {
+    background-image: linear-gradient(180deg, hsl(var(--instruction-bg-start)), hsl(var(--instruction-bg-end)));
+  }
+
+  .btn-gradient {
+    background-image: linear-gradient(135deg, hsl(var(--button-gradient-start)), hsl(var(--button-gradient-end)));
+    color: hsl(var(--button-foreground));
+    box-shadow: var(--shadow-elev-1);
+    transition: var(--transition-smooth);
+  }
+  .btn-gradient:hover {
+    filter: brightness(1.05);
+    box-shadow: var(--shadow-elev-2);
+  }
+
+  .bg-label-danger { background-color: hsl(var(--label-danger)); }
+  .bg-label-success { background-color: hsl(var(--label-success)); }
+
+  .bg-info-blue { background-image: linear-gradient(180deg, hsl(var(--info-blue-start)), hsl(var(--info-blue-end))); }
+  .bg-code-title { background-image: linear-gradient(90deg, hsl(var(--code-title-start)), hsl(var(--code-title-end))); color: hsl(var(--code-title-foreground)); }
+  .bg-tip-grey { background-color: hsl(var(--tip-grey)); }
+
+  .rounded-panel { border-radius: var(--radius-panel); }
+  .shadow-fig-1 { box-shadow: var(--shadow-elev-1); }
+  .shadow-fig-2 { box-shadow: var(--shadow-elev-2); }
+
+  .code-panel { background-color: hsl(var(--code-panel-bg)); color: hsl(var(--code-panel-foreground)); }
+}
+
+/* Additional tokens and utilities for Common Vulnerabilities landing */
+:root {
+  /* Background radial gradient */
+  --bg-center: 272.74 62.3% 89.6%;
+  --bg-edge: 209.06 77.5% 84.3%;
+
+  /* Text colors */
+  --text-strong: 0 0% 20%;
+  --text-desc: 0 0% 0%;
+
+  /* Title gradient */
+  --title-grad-start: 46.85 100% 65.1%;
+  --title-grad-end: 28.6 88.4% 55.9%;
+
+  /* Prompt gradient */
+  --prompt-grad-start: 271.3 74.8% 83%;
+  --prompt-grad-end: 229.1 68.2% 65.3%;
+
+  /* Card gradients */
+  --card-top-start: 350.2 87.5% 80.8%;
+  --card-top-end: 333.9 81.5% 68.1%;
+  --card-bottom-start: 171.8 51.4% 74.9%;
+  --card-bottom-end: 196.9 75% 60.8%;
+
+  /* Darker strip gradients */
+  --card-top-strip-start: 350.2 87.5% 70%;
+  --card-top-strip-end: 333.9 81.5% 58%;
+  --card-bottom-strip-start: 171.8 51.4% 60%;
+  --card-bottom-strip-end: 196.9 75% 50%;
+}
+
+@layer utilities {
+  .bg-app-radial {
+    background-image: radial-gradient(ellipse at center, hsl(var(--bg-center)) 0%, hsl(var(--bg-edge)) 100%);
+  }
+  .gradient-title {
+    background-image: linear-gradient(to right, hsl(var(--title-grad-start)), hsl(var(--title-grad-end)));
+  }
+  .gradient-prompt {
+    background-image: linear-gradient(to right, hsl(var(--prompt-grad-start)), hsl(var(--prompt-grad-end)));
+  }
+  .gradient-card-top {
+    background-image: linear-gradient(to bottom, hsl(var(--card-top-start)), hsl(var(--card-top-end)));
+  }
+  .gradient-card-bottom {
+    background-image: linear-gradient(to bottom, hsl(var(--card-bottom-start)), hsl(var(--card-bottom-end)));
+  }
+  .gradient-cta {
+    background-image: linear-gradient(to right, hsl(var(--card-bottom-start)), hsl(var(--card-bottom-end)));
+  }
+  .gradient-card-strip-top {
+    background-image: linear-gradient(to right, hsl(var(--card-top-strip-start)), hsl(var(--card-top-strip-end)));
+  }
+  .gradient-card-strip-bottom {
+    background-image: linear-gradient(to right, hsl(var(--card-bottom-strip-start)), hsl(var(--card-bottom-strip-end)));
+  }
+  .text-strong { color: hsl(var(--text-strong)); }
+  .text-desc { color: hsl(var(--text-desc)); }
+  .bg-spot {
+    background-image: radial-gradient(circle at center, hsl(var(--bg-center) / 0.6) 0%, transparent 60%);
+  }
+}
+
+/* ExpertOpinion page tokens */
+:root {
+  --bg-start: 235 100% 95%;
+  --bg-end: 285 100% 94%;
+
+  --warm-start: 49 100% 50%;
+  --warm-end: 24 100% 50%;
+
+  --quote-start: 210 100% 70%;
+  --quote-end: 225 100% 55%;
+
+  --panel: 225 20% 85%;
+  --panel-foreground: 230 60% 18%;
+
+  --success-green: 145 62% 35%;
+  --title-warm: 18 85% 35%;
+  --neutral-900: 220 20% 10%;
+
+  --btn-start: 246 100% 85%;
+  --btn-end: 190 75% 58%;
+}
+
+/* Quiz page tokens and utilities */
+:root {
+  --quiz-ellipse-center: var(--bg-center);
+  --quiz-ellipse-edge: var(--bg-edge);
+  --quiz-title-start: 46.85 100% 65.1%;
+  --quiz-title-end: 28.6 88.4% 55.9%;
+  --quiz-q-start: 223 74% 62%;
+  --quiz-q-end: 223 64% 54%;
+  --quiz-pill-start: 315 80% 88%;
+  --quiz-pill-end: 255 65% 76%;
+  --quiz-pill-text: 0 0% 10%;
+  --quiz-pill-ring: 260 70% 60%;
+  --quiz-footer-start: 240 80% 85%;
+  --quiz-footer-shadow: 260 40% 40%;
+}
+@layer utilities {
+  .ellipse {
+    width: min(96vw, 1200px);
+    height: min(80vh, 680px);
+    border-radius: 9999px;
+    background-image: radial-gradient(ellipse at center, hsl(var(--quiz-ellipse-center)) 0%, hsl(var(--quiz-ellipse-edge)) 100%);
+    box-shadow: inset 0 20px 60px hsl(var(--foreground) / 0.08), 0 10px 40px hsl(var(--foreground) / 0.08);
+  }
+  .header-tag {
+    background-image: linear-gradient(180deg, hsl(var(--quiz-title-start)), hsl(var(--quiz-title-end)));
+    color: hsl(var(--foreground));
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 12px 30px hsl(var(--foreground) / 0.18);
+  }
+  .q-panel {
+    background-image: linear-gradient(180deg, hsl(var(--quiz-q-start)), hsl(var(--quiz-q-end)));
+    color: hsl(var(--neutral-900));
+    border-radius: 1rem;
+    padding: 1.25rem 1.5rem;
+    margin-top: 1.25rem;
+    box-shadow: 0 18px 40px hsl(var(--foreground) / 0.2), inset 0 1px 0 hsl(0 0% 100% / 0.3);
+  }
+  .q-panel h2 { font-weight: 600; }
+  .option-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.25rem;
+    border-radius: 9999px;
+    background-image: linear-gradient(180deg, hsl(var(--quiz-pill-start)), hsl(var(--quiz-pill-end)));
+    color: hsl(var(--quiz-pill-text));
+    box-shadow: 0 8px 20px hsl(var(--foreground) / 0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    font-weight: 700;
+  }
+  .option-pill:hover { filter: brightness(1.03); transform: translateY(-1px); }
+  .option-pill--selected {
+    outline: 2px solid hsl(var(--quiz-pill-ring));
+    outline-offset: 2px;
+    box-shadow: 0 12px 28px hsl(var(--quiz-pill-ring) / 0.35);
+  }
+  .footer-btn {
+    background-color: hsl(var(--quiz-footer-start));
+    color: hsl(var(--neutral-900));
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 10px 24px hsl(var(--quiz-footer-shadow) / 0.25);
+    transition: filter 0.2s ease, transform 0.2s ease;
+  }
+  .footer-btn:hover { filter: brightness(1.03); transform: translateY(-1px); }
+  
+  /* Game-specific animations */
+  .animate-dash {
+    animation: dash 20s linear infinite;
+  }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  /* Story link positioning */
+  .story-link {
+    position: relative;
+  }
+  
+  @keyframes dash {
+    to {
+      stroke-dashoffset: -100;
+    }
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translate(-50%, -70%) translateY(0px);
+    }
+    50% {
+      transform: translate(-50%, -70%) translateY(-5px);
+    }
+  }
+}
+
