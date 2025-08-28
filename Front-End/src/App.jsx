@@ -56,6 +56,8 @@ import ProfilePage from "./pages/ProfilePage";
 import AttackDetails from "./pages/AttackDetails";
 import Leaderboard from "./pages/Leaderboard";
 import PostPage from "./pages/PostPage";
+import QuizHomePage from "./pages/QuizHomePage";
+import QuizPage from "./pages/QuizPage";
 
 // Admin components
 import AdminLoginPage from "./pages/AdminLoginPage";
@@ -125,6 +127,8 @@ const AppContent = () => {
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/posts" element={<ProtectedRoute><PostPage /></ProtectedRoute>} />
+            <Route path="/quizHome" element={<ProtectedRoute><QuizHomePage /></ProtectedRoute>} />
+            <Route path="/quiz/:category/:difficulty/:level" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
 
             {/* Protected Game map routes */}
             <Route path="/game" element={<ProtectedRoute><MapIndex /></ProtectedRoute>} />
