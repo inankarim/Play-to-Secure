@@ -1,16 +1,34 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, Mail, User, Target } from "lucide-react"; // Make sure to import 'Target' icon
+import { Camera, Mail, User, Target } from "lucide-react"; // Ensure 'Target' icon is imported
 
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null);
   const [universityName, setUniversityName] = useState(authUser?.universityName || "");
   const [experienceLevel, setExperienceLevel] = useState(authUser?.experienceLevel || "Beginner");
+  const [points, setPoints] = useState(authUser?.points || 0);  // Points state
+  const [badge, setBadge] = useState(authUser?.badge || "Bronze");  // Badge state
+
+  // Automatically calculate badge based on points
+  useEffect(() => {
+    if (points >= 50) {
+      setBadge("Gold");
+    } else if (points >= 10) {
+      setBadge("Silver");
+    } else if (points > 0){
+      setBadge("Bronze");
+    }else{
+      setBadge ("No badges earned so far")
+    }
+      
+    
+  }, [points]);
 
   useEffect(() => {
-    // No need to call fetchUserData here, as we're using authUser from useAuthStore directly
-  }, []); // Empty array ensures it only runs once when the component mounts
+    // Automatically update points when user's points change
+    setPoints(authUser?.points || 0);
+  }, [authUser]);
 
   // Function to handle image upload
   const handleImageUpload = async (e) => {
@@ -147,6 +165,32 @@ const ProfilePage = () => {
                 >
                   Update
                 </button>
+              </div>
+            </div>
+
+            {/* Points Section (Auto-updated) */}
+            <div className="space-y-1.5">
+              <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <User className="w-4 h-4" />
+                Points Earned
+              </div>
+              <div className="flex gap-2">
+                <p className="px-4 py-2.5 bg-base-200 rounded-lg border flex-1">
+                  {points} Points
+                </p>
+              </div>
+            </div>
+
+            {/* Badge Section (Auto-updated based on points) */}
+            <div className="space-y-1.5">
+              <div className="text-sm text-zinc-400 flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Badge Earned
+              </div>
+              <div className="flex gap-2">
+                <p className="px-4 py-2.5 bg-base-200 rounded-lg border flex-1">
+                  {badge} Badge
+                </p>
               </div>
             </div>
           </div>

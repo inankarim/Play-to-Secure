@@ -38,7 +38,7 @@ export const createPost = async (req, res) => {
     res.status(201).json(populatedPost);
   } catch (error) {
     console.error("Error in createPost controller: ", error.message);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error12" });
   }
 };
 

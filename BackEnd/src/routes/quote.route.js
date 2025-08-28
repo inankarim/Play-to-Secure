@@ -1,5 +1,6 @@
 import express from "express";
-// import { addQuote, addQuotes, getRandomQuotes, testQuotes } from "../controller/quote.controller.js";  // Import necessary controller functions
+// import { addQuote, addQuotes, getRandomQuotes, testQuotes } from "../controller/quote.controller.js";  
+
 import { addQuote, addQuotes, getRandomQuotes } from "../controller/quote.controller.js";  
 const router = express.Router();
 

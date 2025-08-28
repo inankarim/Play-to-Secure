@@ -13,7 +13,7 @@ export const addQuote = async (req, res) => {
     // Create a new quote object
     const newQuote = new Quote({
       text,
-      author: author || "Senior Developer", // Default to "Senior Developer" if no author is provided
+      author: author || "Senior Developer",
     });
 
     // Save the new quote to the database
@@ -25,7 +25,7 @@ export const addQuote = async (req, res) => {
       quote: newQuote,  // Send the newly added quote in the response
     });
   } catch (error) {
-    // Catch and log any errors that occur during the quote creation
+    
     console.error("Error adding quote:", error.message);
     res.status(500).json({ message: "Internal Server Error" });
   }
@@ -60,14 +60,14 @@ export const addQuotes = async (req, res) => {
   }
 };
 
-// Fetch 5 random quotes
+// Fetch random quotes
 export const getRandomQuotes = async (req, res) => {
   try {
-    // First check if there are any quotes in the database
+  
     const totalQuotes = await Quote.countDocuments();
     
     if (totalQuotes === 0) {
-      console.log("No quotes found in database - creating default quotes");
+      console.log("No quotes found in database, creating default quotes");
       
       // Create some default quotes if none exist
       const defaultQuotes = [
@@ -87,12 +87,13 @@ export const getRandomQuotes = async (req, res) => {
       console.log("Default quotes inserted successfully");
     }
 
-    // Fetch random quotes from the quotes collection using the aggregate pipeline
+///////////////////////////////////////////////////////////////////////////////////////////////
+    // Fetch random quotes from the quotes collection 
 
     const quotes = await Quote.aggregate([{ $sample: { size: Math.min(5, totalQuotes) } }]);
 
 
-    console.log("Fetched quotes:", quotes); // Debug log
+    console.log("Fetched quotes:", quotes); 
 
     if (!quotes || quotes.length === 0) {
       return res.status(404).json({ message: "No quotes found in the database." });

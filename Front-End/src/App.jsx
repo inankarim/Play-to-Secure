@@ -52,6 +52,8 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import HomePage from "./pages/HomePage";
 import SettingsPage from "./pages/SettingsPage";
+
+
 import ProfilePage from "./pages/ProfilePage";
 import AttackDetails from "./pages/AttackDetails";
 import Leaderboard from "./pages/Leaderboard";
@@ -67,7 +69,9 @@ import AdminQuizPage from "./pages/AdminQuizPage";
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
 
+
 const queryClient = new QueryClient();
+
 
 const App = () => {
   const location = useLocation();
@@ -89,6 +93,7 @@ const App = () => {
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
+
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div data-theme={theme} className="min-h-screen flex flex-col bg-page">
@@ -184,6 +189,7 @@ const App = () => {
         </div>
       </TooltipProvider>
     </QueryClientProvider>
+
   );
 };
 
