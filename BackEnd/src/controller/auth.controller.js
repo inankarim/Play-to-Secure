@@ -169,12 +169,13 @@ export const checkAuth = (req, res) => {
   }
 };
 
-// Get active users count in the last 30 minutes
+/////////////////////////////////////////////////////////////
+// Get active users count 
 
 export const getActiveUsersCount = async (req, res) => {
   try {
     const activeUsersCount = await User.countDocuments({
-      lastActive: { $gte: new Date(Date.now() - 3600000) } // Active in the last 1 hour
+      lastActive: { $gte: new Date(Date.now() - 3600000) }  // time in mili sec Active in the last 1 hour
     });
     res.status(200).json({ activeUsersCount });
   } catch (error) {

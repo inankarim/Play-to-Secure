@@ -9,6 +9,8 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import HomePage from "./pages/HomePage";
 import SettingsPage from "./pages/SettingsPage";
+
+
 import ProfilePage from "./pages/ProfilePage";
 import AttackDetails from "./pages/AttackDetails";
 import Leaderboard from "./pages/Leaderboard";

@@ -6,8 +6,8 @@ import { useAuthStore } from "../store/useAuthStore";
 
 const Dashboard = () => {
   const [activeUsers, setActiveUsers] = useState(0);
-  const [randomQuoteOne, setRandomQuoteOne] = useState(null); // Store first random quote {text, author}
-  const [randomQuoteTwo, setRandomQuoteTwo] = useState(null); // Store second random quote {text, author}
+  const [randomQuoteOne, setRandomQuoteOne] = useState(null); // Store first random quote 
+  const [randomQuoteTwo, setRandomQuoteTwo] = useState(null); // Store second random quote 
   const [error, setError] = useState(""); 
   const { onlineUsers } = useAuthStore();
 
@@ -65,7 +65,7 @@ const Dashboard = () => {
             console.warn("Unexpected API format:", response.data);
           }
 
-          if (quotesArray.length > 0) {
+          if (quotesArray.length > 1) {
             // Fetching the first random quote
             const randomIndexOne = Math.floor(Math.random() * quotesArray.length);
             const selectedQuoteOne = quotesArray[randomIndexOne];
@@ -174,21 +174,22 @@ const Dashboard = () => {
         >
           <Link to="/chathome">
             <h2 className="text-3xl font-bold mb-4 text-blue-950">Chat Box</h2>
-            <p className="text-gray-700 text-2xl">Chat functionality.</p>
+            <p className="text-gray-700 text-2xl">Click to chat with others.</p>
           </Link>
         </motion.div>
       </div>
 
       {/* Random Quotes */}
+      <h2 className=" text-start text-3xl font-bold mb-8 text-blue-200 ml-[-1500px]">Experts Opinions And Guidelines</h2>
       <motion.div
         className="bg-blue-200 w-full max-w shadow-2xl rounded-3xl p-16 mb-11 "
         whileHover={{ y: -10 }}
         transition={{ type: "tween", stiffness: 300 }}
       >
-        <h2 className="text-3xl font-bold mb-4 text-blue-950">Experts Opinions And Guidelines</h2>
+
         {randomQuoteOne ? (
           <div>
-            <p className="text-red-950 font-bold text-5xl mb-2 font-italianno text-center ">{randomQuoteOne.text}</p>
+            <p className="text-red-950 text-5xl mb-2 font-italianno text-center ">{randomQuoteOne.text}</p>
             <p className="text-xl font-semibold text-gray-700 text-right ">- By {randomQuoteOne.author}</p>
           </div>
         ) : (
@@ -205,7 +206,7 @@ const Dashboard = () => {
         <h2 className="text-3xl font-bold mb-4 text-blue-950"></h2>
         {randomQuoteTwo ? (
           <div>
-            <p className="text-red-950 font-bold text-5xl mb-2 font-italianno text-center ">{randomQuoteTwo.text}</p>
+            <p className="text-red-950  text-5xl mb-2 font-italianno text-center ">{randomQuoteTwo.text}</p>
             <p className="text-xl font-semibold text-gray-700 text-right ">- By {randomQuoteTwo.author}</p>
           </div>
         ) : (
