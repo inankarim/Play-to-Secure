@@ -148,7 +148,7 @@ const Dashboard = () => {
           whileHover={{ y: -10 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Link to="/common-vulnerability">
+          <Link to="/attacks">
             <h2 className="text-3xl font-bold mb-4 text-blue-950">Attacks We’ll Be Teaching</h2> 
             <p className="text-gray-700 text-2xl">Details about attacks you'll get to know...</p>
           </Link>
