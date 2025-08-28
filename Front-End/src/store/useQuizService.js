@@ -51,6 +51,21 @@ const useQuizService = {
       throw error;
     }
   },
+  getAnswerReflection: async (questionId, userAnswer, isCorrect) => {
+    try {
+      const response = await axiosInstance.post(`/quiz/flow/reflection`, {
+        questionId,
+        userAnswer,
+        isCorrect,
+      });
+      return response.data.data; // Return the reflection data
+    } catch (error) {
+      console.error('Error fetching answer reflection:', error);
+      throw error;
+    }
+  },
 };
+  
+
 
 export default useQuizService;

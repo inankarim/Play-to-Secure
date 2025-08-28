@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion";  // Ensure this is imported correctly
 import axios from "axios"; // Axios to make API requests
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
@@ -160,7 +160,7 @@ const Dashboard = () => {
           whileHover={{ y: -10 }}
           transition={{ type: "spring", stiffness: 300 }}
         >
-          <Link to="/quiz">
+          <Link to="/quizHome">
             <h2 className="text-3xl font-bold mb-4 text-blue-950">Play The Game</h2>
             <p className="text-gray-700 text-2xl">Click to play!!!!!</p>
           </Link>
@@ -180,35 +180,27 @@ const Dashboard = () => {
       </div>
 
       {/* Random Quotes */}
-
       <h2 className=" text-start text-3xl font-bold mb-8 text-blue-200 ml-[-1500px]">Experts Opinions And Guidelines</h2>
 
       <div className="w-full font-bold max-w-screen-xl mb-8 flex flex-col items-start justify-start gap-3 font-chivo">
-        <h2 className="items-start text-2xl font-bold mt-0 text-white  ">Experts Opinions And Guidelines</h2>
+        <h2 className="items-start text-2xl font-bold mt-0 text-white">Experts Opinions And Guidelines</h2>
       </div>
 
       <motion.div
         className="bg-blue-200 w-full max-w shadow-2xl rounded-3xl p-16 mb-11 "
         whileHover={{ y: -10 }}
         transition={{ type: "tween", stiffness: 300 }}
-      >
+      ></motion.div>
 
+      {randomQuoteOne ? (
+        <div>
+          <p className="text-red-950 text-5xl mb-2 font-italianno text-center ">{randomQuoteOne.text}</p>
 
-        {randomQuoteOne ? (
-          <div>
-            <p className="text-red-950 text-5xl mb-2 font-italianno text-center ">{randomQuoteOne.text}</p>
-
-        
-        {randomQuoteOne ? (
-          <div>
-            <p className="text-red-950 font-normal text-5xl mb-2 font-italianno text-center ">{randomQuoteOne.text}</p>
-
-            <p className="text-xl font-semibold text-gray-700 text-right ">- By {randomQuoteOne.author}</p>
-          </div>
-        ) : (
-          <p className="text-red-500">{error || "No quote available."}</p>
-        )}
-      </motion.div>
+          <p className="text-xl font-semibold text-gray-700 text-right ">- By {randomQuoteOne.author}</p>
+        </div>
+      ) : (
+        <p className="text-red-500">{error || "No quote available."}</p>
+      )}
 
       {/* Second Random Quote */}
       <motion.div
@@ -216,12 +208,9 @@ const Dashboard = () => {
         whileHover={{ y: -10 }}
         transition={{ type: "tween", stiffness: 300 }}
       >
-        <h2 className="text-3xl font-bold mb-4 text-blue-950"></h2>
         {randomQuoteTwo ? (
           <div>
-
-            <p className="text-red-950  text-5xl mb-2 font-italianno text-center ">{randomQuoteTwo.text}</p>
-
+            <p className="text-red-950 text-5xl mb-2 font-italianno text-center ">{randomQuoteTwo.text}</p>
             <p className="text-xl font-semibold text-gray-700 text-right ">- By {randomQuoteTwo.author}</p>
           </div>
         ) : (

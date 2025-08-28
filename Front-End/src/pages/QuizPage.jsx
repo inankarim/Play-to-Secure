@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import quizService from '../store/useQuizService'; // API service for fetching questions
-import ProgressBar from '../components/ProgressBar'; // Progress bar component
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import quizService from "../store/useQuizService"; // API service for fetching questions
+import ProgressBar from "../components/ProgressBar"; // Progress bar component
+import QuizReflectionModal from "../components/QuizReflectionModal"; // Modal for showing reflection
 
 const QuizPage = () => {
   const { category, difficulty, level } = useParams(); // Get category, difficulty, and level from URL
@@ -10,9 +11,11 @@ const QuizPage = () => {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [currentQuestionOrder, setCurrentQuestionOrder] = useState(1);
-  const [correctAnswer, setCorrectAnswer] = useState(''); // State to store correct answer
+  const [correctAnswer, setCorrectAnswer] = useState(""); // State to store correct answer
   const [points, setPoints] = useState(0); // State for points earned
   const [totalQuestions, setTotalQuestions] = useState(0); // State to store total questions in category
+  const [reflection, setReflection] = useState(""); // Store reflection for the question
+  const [isModalOpen, setIsModalOpen] = useState(false); // Control modal visibility
 
   // Fetch the next question based on category, difficulty, and level
   useEffect(() => {
@@ -33,7 +36,7 @@ const QuizPage = () => {
         console.log("Total questions fetched:", result); // Debugging the total questions
         setTotalQuestions(result.totalOrder); // Set total questions from the response
       } catch (error) {
-        console.error('Error fetching total order:', error);
+        console.error("Error fetching total order:", error);
       }
     };
 
@@ -49,15 +52,22 @@ const QuizPage = () => {
       try {
         // Submit answer to backend
         const result = await quizService.submitAnswer(question._id, selectedAnswer);
-        
+
         // Set the answer submission state
         setIsSubmitted(true);
         setPoints(result.pointsEarned); // Set the points earned from the backend response
-        
+
         // Store the correct answer in the state for comparison (from backend response)
         setCorrectAnswer(result.correctAnswer); // This should already be done in the fetch call
+
+        // Fetch reflection from backend
+        const reflectionData = await quizService.getAnswerReflection(question._id, selectedAnswer, result.isCorrect);
+        setReflection(reflectionData.reflection); // Store the reflection
+
+        // Open the modal
+        setIsModalOpen(true);
       } catch (error) {
-        console.error('Error submitting answer:', error);
+        console.error("Error submitting answer:", error);
       }
     }
   };
@@ -71,6 +81,9 @@ const QuizPage = () => {
       setSelectedAnswer(null);
       setCurrentQuestionOrder(currentQuestionOrder + 1); // Proceed to the next question
     }
+
+    // Close the modal when user proceeds
+    setIsModalOpen(false);
   };
 
   const handleBack = () => {
@@ -115,30 +128,36 @@ const QuizPage = () => {
 
             {/* Answer Options */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              {question.options && question.options.map((option) => (
-                <button
-                  key={option.optionLabel}
-                  onClick={() => handleAnswerChange(option.optionLabel)}
-                  disabled={isSubmitted}
-                  className={`p-6 rounded-lg font-bold text-lg transition-colors ${
-                    selectedAnswer === option.optionLabel
-                      ? 'bg-yellow-400 text-black'
-                      : 'bg-gray-400 text-black hover:bg-gray-300'
-                  } ${isSubmitted ? 'cursor-not-allowed opacity-75' : 'cursor-pointer'}`}
-                >
-                  <div className="text-sm mb-2">{option.optionLabel}.</div>
-                  <div>{option.optionText}</div>
-                </button>
-              ))}
+              {question.options &&
+                question.options.map((option) => (
+                  <button
+                    key={option.optionLabel}
+                    onClick={() => handleAnswerChange(option.optionLabel)}
+                    disabled={isSubmitted}
+                    className={`p-6 rounded-lg font-bold text-lg transition-colors ${
+                      selectedAnswer === option.optionLabel
+                        ? "bg-yellow-400 text-black"
+                        : "bg-gray-400 text-black hover:bg-gray-300"
+                    } ${isSubmitted ? "cursor-not-allowed opacity-75" : "cursor-pointer"}`}
+                  >
+                    <div className="text-sm mb-2">{option.optionLabel}.</div>
+                    <div>{option.optionText}</div>
+                  </button>
+                ))}
             </div>
 
             {/* Result Message */}
             {isSubmitted && (
               <div className="text-center mb-6">
-                <p className={`text-lg font-bold ${
-                  compareAnswers(selectedAnswer, correctAnswer) ? 'text-green-400' : 'text-red-400'
-                }`}>
-                  Your answer is {compareAnswers(selectedAnswer, correctAnswer) ? 'correct' : 'incorrect'}!
+                <p
+                  className={`text-lg font-bold ${
+                    compareAnswers(selectedAnswer, correctAnswer)
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }`}
+                >
+                  Your answer is{" "}
+                  {compareAnswers(selectedAnswer, correctAnswer) ? "correct" : "incorrect"}!
                 </p>
                 {selectedAnswer !== correctAnswer && (
                   <p className="text-gray-300 mt-2">
@@ -164,8 +183,8 @@ const QuizPage = () => {
                   disabled={!selectedAnswer}
                   className={`px-6 py-3 rounded-lg font-bold transition-colors ${
                     selectedAnswer
-                      ? 'bg-yellow-400 text-black hover:bg-yellow-300'
-                      : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                      ? "bg-yellow-400 text-black hover:bg-yellow-300"
+                      : "bg-gray-500 text-gray-300 cursor-not-allowed"
                   }`}
                 >
                   Submit Answer
@@ -198,6 +217,13 @@ const QuizPage = () => {
           </div>
         )}
       </div>
+
+      {/* Reflection Modal */}
+      <QuizReflectionModal
+        isOpen={isModalOpen}
+        reflection={reflection}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };
