@@ -126,7 +126,7 @@ const Dashboard = () => {
       </motion.div>
 
       {/* Sections */}
-      <div className="grid grid-cols-2 grid-rows-2 sm:grid-cols-2 sm:grid-rows-2 lg:grid-cols-2 gap-6 w-full max-w-screen-xl mb-10">
+      <div className="grid grid-cols-2 grid-rows-2 sm:grid-cols-2 sm:grid-rows-2 lg:grid-cols-2 gap-x-12 gap-y-6 w-full max-w-screen-xl mb-10">
         <motion.div
           className="bg-blue-200 shadow-2xl rounded-3xl p-20" 
           whileHover={{ y: -10 }}
@@ -180,15 +180,18 @@ const Dashboard = () => {
       </div>
 
       {/* Random Quotes */}
+      <div className="w-full font-bold max-w-screen-xl mb-8 flex flex-col items-start justify-start gap-3 font-chivo">
+        <h2 className="items-start text-2xl font-bold mt-0 text-white  ">Experts Opinions And Guidelines</h2>
+      </div>
       <motion.div
         className="bg-blue-200 w-full max-w shadow-2xl rounded-3xl p-16 mb-11 "
         whileHover={{ y: -10 }}
         transition={{ type: "tween", stiffness: 300 }}
       >
-        <h2 className="text-3xl font-bold mb-4 text-blue-950">Experts Opinions And Guidelines</h2>
+        
         {randomQuoteOne ? (
           <div>
-            <p className="text-red-950 font-bold text-5xl mb-2 font-italianno text-center ">{randomQuoteOne.text}</p>
+            <p className="text-red-950 font-normal text-5xl mb-2 font-italianno text-center ">{randomQuoteOne.text}</p>
             <p className="text-xl font-semibold text-gray-700 text-right ">- By {randomQuoteOne.author}</p>
           </div>
         ) : (
@@ -205,7 +208,7 @@ const Dashboard = () => {
         <h2 className="text-3xl font-bold mb-4 text-blue-950"></h2>
         {randomQuoteTwo ? (
           <div>
-            <p className="text-red-950 font-bold text-5xl mb-2 font-italianno text-center ">{randomQuoteTwo.text}</p>
+            <p className="text-red-950 font-normal text-5xl mb-2 font-italianno text-center ">{randomQuoteTwo.text}</p>
             <p className="text-xl font-semibold text-gray-700 text-right ">- By {randomQuoteTwo.author}</p>
           </div>
         ) : (
