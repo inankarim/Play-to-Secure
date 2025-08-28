@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { Toaster as ReactHotToaster } from "react-hot-toast";
@@ -69,28 +69,7 @@ import { useThemeStore } from "./store/useThemeStore";
 
 const queryClient = new QueryClient();
 
-// Protected Route Component - requires authentication
-const ProtectedRoute = ({ children }) => {
-  const { authUser } = useAuthStore();
-  return authUser ? children : <Navigate to="/login" />;
-};
-
-// Public Route Component - redirects to dashboard if authenticated
-const PublicRoute = ({ children }) => {
-  const { authUser } = useAuthStore();
-  return !authUser ? children : <Navigate to="/" />;
-};
-
-// Admin Route Component - separate admin authentication logic
-const AdminRoute = ({ children }) => {
-  // You can add admin-specific authentication logic here
-  // For now, using the same auth logic
-  const { authUser } = useAuthStore();
-  return authUser ? children : <Navigate to="/admin" />;
-};
-
-// This component contains the routing logic and needs to be inside BrowserRouter
-const AppContent = () => {
+const App = () => {
   const location = useLocation();
   const { theme } = useThemeStore();
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
@@ -110,90 +89,102 @@ const AppContent = () => {
   const isAdminRoute = location.pathname.startsWith("/admin");
 
   return (
-    <div data-theme={theme} className="min-h-screen flex flex-col bg-page">
-      {!isAdminRoute && <Navbar />}
-      
-      <div className="flex-1 pt-14">
-        <div className="animate-fade-in">
-          <Routes>
-            {/* Public Authentication Routes */}
-            <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
-            <Route path="/signup" element={<PublicRoute><SignUpPage /></PublicRoute>} />
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <div data-theme={theme} className="min-h-screen flex flex-col bg-page">
+          {!isAdminRoute && <Navbar />}
+          
+          <div className="flex-1 pt-14">
+            <div className="animate-fade-in">
+              <Routes>
+                {/* Main User Routes */}
+                <Route path="/" element={authUser ? <Dashboard /> : <Navigate to="/login" />} />
+                <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />} />
+                <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to="/" />} />
+                <Route path="/chathome" element={authUser ? <HomePage /> : <Navigate to="/login" />} />
+                <Route path="/settings" element={authUser ? <SettingsPage /> : <Navigate to="/login" />} />
+                <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
+                <Route path="/leaderboard" element={authUser ? <Leaderboard /> : <Navigate to="/login" />} />
+                <Route path="/posts" element={authUser ? <PostPage /> : <Navigate to="/login" />} />
+                <Route path="/quizHome" element={authUser ? <QuizHomePage /> : <Navigate to="/login" />} />
+                <Route path="/quiz/:category/:difficulty/:level" element={authUser ? <QuizPage /> : <Navigate to="/login" />} />
 
-            {/* Protected User Routes - All require authentication */}
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/chathome" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
-            <Route path="/posts" element={<ProtectedRoute><PostPage /></ProtectedRoute>} />
-            <Route path="/quizHome" element={<ProtectedRoute><QuizHomePage /></ProtectedRoute>} />
-            <Route path="/quiz/:category/:difficulty/:level" element={<ProtectedRoute><QuizPage /></ProtectedRoute>} />
+                {/* Game Map Routes */}
+                <Route path="/game" element={authUser ? <MapIndex /> : <Navigate to="/login" />} />
+                <Route path="/game/sqli" element={authUser ? <SQLiMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/dom-clobbering" element={authUser ? <DOMClobberingMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/nosqli" element={authUser ? <NoSQLiMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/xss" element={authUser ? <XSSMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/idor" element={authUser ? <IDORMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/css-injection" element={authUser ? <CSSInjectionMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/csp-bypass" element={authUser ? <CSPBypassMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/clickjacking" element={authUser ? <ClickjackingMapGame /> : <Navigate to="/login" />} />
+                <Route path="/game/cdn-tampering" element={authUser ? <CDNTamperingMapGame /> : <Navigate to="/login" />} />
+                
+                {/* Educational Routes */}
+                <Route path="/dom-clobbering-index" element={authUser ? <DOMClobberingIndex /> : <Navigate to="/login" />} />
+                <Route path="/common-vulnerability" element={authUser ? <CommonVulnerabilities /> : <Navigate to="/login" />} />
+                <Route path="/dom-clobbering" element={authUser ? <DOMClobbering /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-dom-clobbering" element={authUser ? <DetailedVulnerability /> : <Navigate to="/login" />} />
+                
+                {/* SQLi Routes */}
+                <Route path="/sqli" element={authUser ? <SQLiIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-sqli" element={authUser ? <DetailedSQLi /> : <Navigate to="/login" />} />
+                
+                {/* NoSQLi Routes */}
+                <Route path="/nosqli" element={authUser ? <NoSQLiIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-nosqli" element={authUser ? <DetailedNoSQLi /> : <Navigate to="/login" />} />
+                
+                {/* XSS Routes */}
+                <Route path="/xss" element={authUser ? <XSSIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-xss" element={authUser ? <DetailedXSS /> : <Navigate to="/login" />} />
+                
+                {/* IDOR Routes */}
+                <Route path="/idor" element={authUser ? <IDORIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-idor" element={authUser ? <DetailedIDOR /> : <Navigate to="/login" />} />
+                
+                {/* CSS Injection Routes */}
+                <Route path="/css-injection" element={authUser ? <CSSInjectionIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-css-injection" element={authUser ? <DetailedCSSInjection /> : <Navigate to="/login" />} />
+                
+                {/* CSP Bypass Routes */}
+                <Route path="/csp-bypass" element={authUser ? <CSPBypassIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-csp-bypass" element={authUser ? <DetailedCSPBypass /> : <Navigate to="/login" />} />
+                
+                {/* Clickjacking Routes */}
+                <Route path="/clickjacking" element={authUser ? <ClickjackingIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-clickjacking" element={authUser ? <DetailedClickjacking /> : <Navigate to="/login" />} />
+                
+                {/* CDN Tampering Routes */}
+                <Route path="/cdn-tampering" element={authUser ? <CDNTamperingIndex /> : <Navigate to="/login" />} />
+                <Route path="/detailed-vulnerability-cdn-tampering" element={authUser ? <DetailedCDNTampering /> : <Navigate to="/login" />} />
+                
+                {/* Other Educational Routes */}
+                <Route path="/expert-opinion" element={authUser ? <ExpertOpinionIndex /> : <Navigate to="/login" />} />
+                <Route path="/quiz" element={authUser ? <Quiz /> : <Navigate to="/login" />} />
 
-            {/* Protected Game map routes */}
-            <Route path="/game" element={<ProtectedRoute><MapIndex /></ProtectedRoute>} />
-            <Route path="/game/sqli" element={<ProtectedRoute><SQLiMapGame /></ProtectedRoute>} />
-            <Route path="/game/dom-clobbering" element={<ProtectedRoute><DOMClobberingMapGame /></ProtectedRoute>} />
-            <Route path="/game/nosqli" element={<ProtectedRoute><NoSQLiMapGame /></ProtectedRoute>} />
-            <Route path="/game/xss" element={<ProtectedRoute><XSSMapGame /></ProtectedRoute>} />
-            <Route path="/game/idor" element={<ProtectedRoute><IDORMapGame /></ProtectedRoute>} />
-            <Route path="/game/css-injection" element={<ProtectedRoute><CSSInjectionMapGame /></ProtectedRoute>} />
-            <Route path="/game/csp-bypass" element={<ProtectedRoute><CSPBypassMapGame /></ProtectedRoute>} />
-            <Route path="/game/clickjacking" element={<ProtectedRoute><ClickjackingMapGame /></ProtectedRoute>} />
-            <Route path="/game/cdn-tampering" element={<ProtectedRoute><CDNTamperingMapGame /></ProtectedRoute>} />
-            
-            {/* Protected Educational app routes */}
-            <Route path="/dom-clobbering-index" element={<ProtectedRoute><DOMClobberingIndex /></ProtectedRoute>} />
-            <Route path="/common-vulnerability" element={<ProtectedRoute><CommonVulnerabilities /></ProtectedRoute>} />
-            <Route path="/dom-clobbering" element={<ProtectedRoute><DOMClobbering /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-dom-clobbering" element={<ProtectedRoute><DetailedVulnerability /></ProtectedRoute>} />
-            <Route path="/sqli" element={<ProtectedRoute><SQLiIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-sqli" element={<ProtectedRoute><DetailedSQLi /></ProtectedRoute>} />
-            <Route path="/nosqli" element={<ProtectedRoute><NoSQLiIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-nosqli" element={<ProtectedRoute><DetailedNoSQLi /></ProtectedRoute>} />
-            <Route path="/xss" element={<ProtectedRoute><XSSIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-xss" element={<ProtectedRoute><DetailedXSS /></ProtectedRoute>} />
-            <Route path="/idor" element={<ProtectedRoute><IDORIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-idor" element={<ProtectedRoute><DetailedIDOR /></ProtectedRoute>} />
-            <Route path="/css-injection" element={<ProtectedRoute><CSSInjectionIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-css-injection" element={<ProtectedRoute><DetailedCSSInjection /></ProtectedRoute>} />
-            <Route path="/csp-bypass" element={<ProtectedRoute><CSPBypassIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-csp-bypass" element={<ProtectedRoute><DetailedCSPBypass /></ProtectedRoute>} />
-            <Route path="/clickjacking" element={<ProtectedRoute><ClickjackingIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-clickjacking" element={<ProtectedRoute><DetailedClickjacking /></ProtectedRoute>} />
-            <Route path="/cdn-tampering" element={<ProtectedRoute><CDNTamperingIndex /></ProtectedRoute>} />
-            <Route path="/detailed-vulnerability-cdn-tampering" element={<ProtectedRoute><DetailedCDNTampering /></ProtectedRoute>} />
-            <Route path="/expert-opinion" element={<ProtectedRoute><ExpertOpinionIndex /></ProtectedRoute>} />
-            <Route path="/quiz" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
+                {/* Admin Routes */}
+                <Route path="/admin" element={<AdminLoginPage />} />
+                <Route path="/admin/quiz" element={authUser ? <AdminQuizPage /> : <Navigate to="/admin" />} />
 
-            {/* Protected Other Routes */}
-            <Route path="/attacks" element={<ProtectedRoute><AttackDetails /></ProtectedRoute>} />
+                {/* Other Routes */}
+                <Route path="/attacks" element={authUser ? <AttackDetails /> : <Navigate to="/login" />} />
 
-            {/* Admin Routes - Special handling for admin authentication */}
-            <Route path="/admin" element={<AdminLoginPage />} />
-            <Route path="/admin/quiz" element={<AdminRoute><AdminQuizPage /></AdminRoute>} />
-
-            {/* Fallback Route - Also protected */}
-            <Route path="*" element={<ProtectedRoute><NotFound /></ProtectedRoute>} />
-          </Routes>
+                {/* Fallback */}
+                <Route path="*" element={authUser ? <NotFound /> : <Navigate to="/login" replace />} />
+              </Routes>
+            </div>
+          </div>
+          
+          {!isAdminRoute && <Footer />}
+          
+          <Toaster />
+          <Sonner />
+          <ReactHotToaster />
         </div>
-      </div>
-      
-      {!isAdminRoute && <Footer />}
-    </div>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
-
-// Main App component - this is what gets wrapped by BrowserRouter in main.jsx
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <ReactHotToaster />
-      <AppContent />
-    </TooltipProvider>
-  </QueryClientProvider>
-);
 
 export default App;
