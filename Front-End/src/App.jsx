@@ -22,6 +22,8 @@ import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
 
 import PostPage from "./pages/PostPage";  // Import PostPage component
+import QuizHomePage from "./pages/QuizHomePage";
+import QuizPage from "./pages/QuizPage";
 
 const App = () => {
   const location = useLocation();
@@ -56,6 +58,9 @@ const App = () => {
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/leaderboard" element={authUser ? <Leaderboard /> : <Navigate to="/login" />} />
         <Route path="/posts" element={authUser ? <PostPage /> : <Navigate to="/login" />} />
+        <Route path="/quizHome" element={authUser ? <QuizHomePage /> : <Navigate to="/login" />} />
+        <Route path="/quiz/:category/:difficulty/:level" element={authUser ? <QuizPage /> : <Navigate to="/login" />} />
+
 
         {/* Admin Routes */}
         <Route path="/admin" element={<AdminLoginPage />} />
