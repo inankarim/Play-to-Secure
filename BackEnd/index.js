@@ -15,6 +15,8 @@ import postRoutes from "./src/routes/post.routes.js"; // New Facebook-style rout
 import quizRoutes from "./src/routes/quiz.route.js";
 import quoteRoutes from "./src/routes/quote.route.js"
 
+import leaderboardRoutes from "./src/routes/leaderboard.route.js"
+
 // Socket.IO app/server (already wires up group socket events)
 import { app, server } from "./src/lib/socket.js";
 
@@ -51,6 +53,10 @@ app.use("/api/post", postRoutes);
 //////////////
 //add the quotes route
 app.use("/api/quotes", quoteRoutes);
+
+////////// leaderboard///////
+
+app.use("/api/leaderboard", leaderboardRoutes);
 
 app.use("/api/quiz/flow", quizRoutes);
 // Static files (production)
