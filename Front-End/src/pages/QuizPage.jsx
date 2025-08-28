@@ -223,6 +223,7 @@ const QuizPage = () => {
         isOpen={isModalOpen}
         reflection={reflection}
         onClose={() => setIsModalOpen(false)}
+        sendMessageToAI={quizService.sendMessageToAI} // Add this line
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { axiosInstance } from "../lib/axios.js"; 
+import { axiosInstance, aiAxiosInstance} from "../lib/axios.js"; 
 
 const useQuizService = {
   // Get categories from the backend
@@ -62,6 +62,56 @@ const useQuizService = {
     } catch (error) {
       console.error('Error fetching answer reflection:', error);
       throw error;
+    }
+  },
+
+  //   try {
+  //     const response = await aiAxiosInstance.post('', {
+  //       prompt: message,
+  //       temperature: 0.7,  // Optional: Adjust AI's creativity
+  //       max_tokens: 150,   // Adjust response length
+  //     });
+
+  //     // Assuming the response is in `response.data` (check your API's documentation)
+  //     return response.data.content || "Sorry, I couldn’t understand that."; // Example format (modify as needed)
+  //   } catch (error) {
+  //     console.error("Error with AI message:", error);
+  //     return "Sorry, I couldn't get a response from the AI.";
+  //   }
+  // },
+  //... other functions
+  sendMessageToAI: async (message) => {
+    try {
+      // The payload needs to be structured for the Gemini API
+      const payload = {
+        contents: [
+          {
+            parts: [
+              {
+                text: message,
+              },
+            ],
+          },
+        ],
+        
+
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 150,
+        },
+      };
+      {
+  }
+
+      const response = await aiAxiosInstance.post('', payload);
+
+      // Access the response text according to the Gemini API structure
+      return response.data.candidates[0].content.parts[0].text || "Sorry, I couldn’t understand that.";
+    } catch (error) {
+      console.error("Error with AI message:", error);
+      // Provide more specific error feedback if possible
+      const errorMessage = error.response?.data?.error?.message || "Sorry, I couldn't get a response from the AI.";
+      return errorMessage;
     }
   },
 };

@@ -1,26 +1,44 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 const QuizReflectionModal = ({ isOpen, reflection, onClose, sendMessageToAI }) => {
   const [chatInput, setChatInput] = useState('');
-  const [messages, setMessages] = useState([
-    { sender: 'bot', text: reflection }, // Initial reflection as AI message
-  ]);
+  const [messages, setMessages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef(null);
 
-  if (!isOpen) return null; // Don't render the modal if it's not open
+  // Initialize messages with reflection when modal opens
+  useEffect(() => {
+    if (isOpen && reflection) {
+      setMessages([{ sender: 'bot', text: reflection }]);
+    }
+  }, [isOpen, reflection]);
+
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  if (!isOpen) return null;
 
   const handleSendMessage = async () => {
-    if (!chatInput) return;
+    if (!chatInput.trim() || isLoading) return;
 
+    const userMessage = chatInput.trim();
+    
     // Add user message to chat
     setMessages((prevMessages) => [
       ...prevMessages,
-      { sender: 'user', text: chatInput },
+      { sender: 'user', text: userMessage },
     ]);
+
+    // Clear input immediately
+    setChatInput('');
+    setIsLoading(true);
 
     // Send message to AI
     try {
-      const response = await sendMessageToAI(chatInput);
+      const response = await sendMessageToAI(userMessage);
       setMessages((prevMessages) => [
         ...prevMessages,
         { sender: 'bot', text: response },
@@ -29,71 +47,152 @@ const QuizReflectionModal = ({ isOpen, reflection, onClose, sendMessageToAI }) =
       console.error('Error with AI message:', error);
       setMessages((prevMessages) => [
         ...prevMessages,
-        { sender: 'bot', text: 'Sorry, I couldn’t understand that.' },
+        { sender: 'bot', text: 'Sorry, I couldn\'t process your request. Please try again.' },
       ]);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    // Clear input
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleClose = () => {
+    // Reset state when closing
+    setMessages([]);
     setChatInput('');
+    setIsLoading(false);
+    onClose();
   };
 
   return (
     <motion.div
-      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-50"
+      className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-60 z-50 p-2 md:p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="bg-white rounded-lg p-8 max-w-lg w-full">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Explanation & AI Chat</h2>
+      <motion.div
+        className="bg-white rounded-2xl shadow-2xl w-[95vw] h-[95vh] md:w-[85vw] md:h-[85vh] lg:w-[75vw] lg:h-[80vh] flex flex-col overflow-hidden"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+      >
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white p-4 md:p-6 flex justify-between items-center">
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold">AI Tutor Explanation</h2>
+            <p className="text-blue-100 text-sm mt-1">Get detailed explanations and ask follow-up questions</p>
+          </div>
+          <button
+            onClick={handleClose}
+            className="text-white hover:text-gray-200 transition-colors text-2xl md:text-3xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-white hover:bg-opacity-20"
+          >
+            ×
+          </button>
+        </div>
         
-        {/* Reflection */}
-        <p className="text-lg text-gray-600 mb-6">{reflection}</p>
-        
-        {/* Chat Area */}
-        <div className="h-48 overflow-y-auto border-t border-b p-4 mb-6 bg-gray-100 rounded-lg">
-          <div className="space-y-4">
+        {/* Chat Messages Area - Takes up most of the space */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 bg-gradient-to-br from-gray-50 to-blue-50">
+          <div className="space-y-4 md:space-y-6 max-w-5xl mx-auto">
             {messages.map((message, index) => (
-              <div key={index} className={message.sender === 'user' ? 'text-right' : 'text-left'}>
+              <motion.div
+                key={index}
+                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
                 <div
-                  className={`inline-block p-2 rounded-lg max-w-xs ${
-                    message.sender === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-black'
+                  className={`max-w-[85%] md:max-w-[80%] p-4 md:p-6 rounded-2xl shadow-lg ${
+                    message.sender === 'user'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-br-md'
+                      : 'bg-white text-gray-800 rounded-bl-md border border-gray-200'
                   }`}
                 >
-                  {message.text}
+                  <div className="whitespace-pre-wrap leading-relaxed text-sm md:text-base">
+                    {message.text}
+                  </div>
+                  <div className={`text-xs mt-2 opacity-70 ${
+                    message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'
+                  }`}>
+                    {message.sender === 'user' ? 'You' : 'AI Tutor'}
+                  </div>
                 </div>
-              </div>
+              </motion.div>
             ))}
+            
+            {/* Loading indicator */}
+            {isLoading && (
+              <motion.div
+                className="flex justify-start"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+              >
+                <div className="bg-white p-4 md:p-6 rounded-2xl rounded-bl-md border border-gray-200 shadow-lg">
+                  <div className="flex space-x-2">
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  <div className="text-xs mt-2 text-gray-500 opacity-70">AI Tutor is thinking...</div>
+                </div>
+              </motion.div>
+            )}
+            
+            {/* Scroll anchor */}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
-        {/* Chat Input */}
-        <div className="flex gap-2 mb-6">
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            className="input input-bordered flex-1"
-            placeholder="Ask a question..."
-          />
-          <button
-            onClick={handleSendMessage}
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition-colors"
-          >
-            Send
-          </button>
+        {/* Chat Input Area - Fixed at bottom */}
+        <div className="bg-white border-t border-gray-200 p-4 md:p-6">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex gap-2 md:gap-3">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="flex-1 px-4 py-3 md:py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base md:text-lg placeholder-gray-400"
+                placeholder="Ask a follow-up question about this topic..."
+                disabled={isLoading}
+              />
+              <button
+                onClick={handleSendMessage}
+                disabled={!chatInput.trim() || isLoading}
+                className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 font-semibold disabled:opacity-50 disabled:cursor-not-allowed text-base md:text-lg shadow-lg"
+              >
+                {isLoading ? (
+                  <div className="flex items-center space-x-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="hidden md:inline">Sending...</span>
+                  </div>
+                ) : (
+                  'Send'
+                )}
+              </button>
+            </div>
+          </div>
         </div>
 
-        {/* Done Button */}
-        <div className="flex justify-end gap-4">
-          <button
-            onClick={onClose}
-            className="px-6 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-400 transition-colors"
-          >
-            Done
-          </button>
+        {/* Done Button - Fixed at bottom */}
+        <div className="bg-gray-50 p-4 border-t border-gray-200">
+          <div className="max-w-5xl mx-auto flex justify-end">
+            <button
+              onClick={handleClose}
+              className="px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-200 font-semibold text-base md:text-lg shadow-lg"
+            >
+              Continue Quiz →
+            </button>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
