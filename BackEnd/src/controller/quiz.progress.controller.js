@@ -252,3 +252,27 @@ export const getProgressSummary = async (req, res) => {
     return res.status(500).json({ success: false, message: "Error computing progress summary", error: e.message });
   }
 };
+export const getTotalOrder = async (req, res) => {
+  try {
+    const { category, difficulty = "Easy", level = 1 } = req.query;
+
+    // Validate category input
+    if (!category) return res.status(400).json({ success: false, message: "Category is required" });
+
+    // Find the total number of questions for the given category, difficulty, and level
+    const totalQuestions = await SqlQuiz.countDocuments({
+      category: category,
+      difficulty: difficulty,
+      level: Number(level),
+      isActive: true,
+    });
+
+    return res.json({
+      success: true,
+      data: { totalOrder: totalQuestions },
+    });
+  } catch (error) {
+    console.error("getTotalOrder error:", error);
+    return res.status(500).json({ success: false, message: "Error fetching total order", error: error.message });
+  }
+};

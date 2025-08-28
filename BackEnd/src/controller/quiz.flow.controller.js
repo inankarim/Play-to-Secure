@@ -79,6 +79,7 @@ async function awardSegmentBadge({ userId, category, difficulty, level }) {
 
 // POST /api/quiz/submit
 // Body: { questionId, selectedAnswer, timeTaken? }
+// POST /api/quiz/submit
 export const submitAnswer = async (req, res) => {
   try {
     const userId = resolveUserId(req);
@@ -93,12 +94,6 @@ export const submitAnswer = async (req, res) => {
     const q = await SqlQuiz.findById(questionId);
     if (!q || !q.isActive) {
       return res.status(404).json({ success: false, message: "Question not found or inactive" });
-    }
-
-    // Prevent duplicate answers (unique index will also enforce)
-    const already = await UserResponse.findOne({ userId, questionId });
-    if (already) {
-      return res.status(409).json({ success: false, message: "You already answered this question" });
     }
 
     // Grade
@@ -164,14 +159,12 @@ export const submitAnswer = async (req, res) => {
         segmentCompleted,
         badgeAwarded,
         next,
+        correctAnswer: q.correctAnswer // Ensure correct answer is part of the response
       },
     });
   } catch (e) {
-    // Duplicate guard via unique index
-    if (e?.code === 11000) {
-      return res.status(409).json({ success: false, message: "You already answered this question" });
-    }
     console.error("submitAnswer error:", e);
     return res.status(500).json({ success: false, message: "Error submitting answer", error: e.message });
   }
 };
+

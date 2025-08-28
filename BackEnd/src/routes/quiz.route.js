@@ -3,7 +3,7 @@ import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js"; // add when ready
 
 import { getNextQuestion, submitAnswer } from "../controller/quiz.flow.controller.js";
-import { getCategories, getLevelsByCategory, getCategoryStatus, getProgressSummary } from "../controller/quiz.progress.controller.js";
+import { getCategories, getLevelsByCategory, getCategoryStatus, getProgressSummary, getTotalOrder } from "../controller/quiz.progress.controller.js";
 import { getAnswerReflection } from "../controller/quiz.reflection.controller.js";
 
 const router = express.Router();
@@ -18,5 +18,6 @@ router.get("/levels", protectRoute, getLevelsByCategory);
 router.get("/status", protectRoute, getCategoryStatus);
 router.get("/progress/summary", protectRoute, getProgressSummary);
 router.post("/reflection", protectRoute, getAnswerReflection);
+router.get("/total-order", protectRoute, getTotalOrder);
 
 export default router;
