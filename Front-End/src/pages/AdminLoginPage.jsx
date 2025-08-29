@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Eye, EyeOff, Loader2, Lock, User, Shield, MessageSquare, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-const ADMIN_USER = admin;
-const ADMIN_PASS = admin12;
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'admin12';
 
 const AdminLoginPage = () => {
   const navigate = useNavigate();
