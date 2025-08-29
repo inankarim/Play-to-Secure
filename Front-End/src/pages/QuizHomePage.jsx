@@ -4,7 +4,10 @@ import { useNavigate } from 'react-router-dom';
 import bg from "../assets/z69i_kxes_211202.jpg";
 import soundFile from "../assets/jungle-sound-effect-249042.mp3";
 import quizService from "../store/useQuizService.js";
-import RainCanvas from "../components/RainCanvas.jsx"; // rain overlay
+import RainCanvas from "../components/RainCanvas.jsx";
+import Lottie from "lottie-react";
+import monkey from "../assets/monkey.json";
+import tiger from "../assets/tiger.json";
 
 // Use this stage to gate (same as your navigation target)
 const TARGET_DIFFICULTY = "Easy";
@@ -199,6 +202,34 @@ const QuizHomePage = () => {
           {/* 🌧️ Rain overlay */}
           <RainCanvas intensity={1.1} speed={1} angle={20} opacity={0.55} zIndex={1} />
 
+          {/* 🐒 Monkey (top-right, comfy padding, responsive size) */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              top: "1.25rem",
+              right: "1.25rem",
+              zIndex: 2,
+              width: "clamp(96px, 10vw, 160px)",
+              height: "clamp(96px, 10vw, 160px)",
+            }}
+          >
+            <Lottie animationData={monkey} loop autoplay />
+          </div>
+
+          {/* 🐯 Tiger (bottom-left, comfy padding, responsive size) */}
+          <div
+            className="absolute pointer-events-none"
+            style={{
+              bottom: "1.25rem",
+              left: "1.25rem",
+              zIndex: 2,
+              width: "clamp(112px, 12vw, 180px)",
+              height: "clamp(112px, 12vw, 180px)",
+            }}
+          >
+            <Lottie animationData={tiger} loop autoplay />
+          </div>
+
           {/* Foliage */}
           {getJungleElements().map((el, i) => (
             <div
@@ -311,7 +342,7 @@ const QuizHomePage = () => {
           {/* Jungle Map Title */}
           <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-30">
             <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 via-yellow-500 to-emerald-600 text-center">
-              🌿 Jungle Security Quest 🌿
+              🌿 Security Quest 🌿
             </h1>
             <p className="text-center text-green-200 mt-2 text-lg font-medium">
               Navigate the cybersecurity jungle and master each challenge!
