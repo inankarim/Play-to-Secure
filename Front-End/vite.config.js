@@ -1,11 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
-    define: {
-    'process.env': process.env
-  },
   plugins: [react()],
-  base: process.env.VITE_BASE_PATH || '/Play-to-Secure',
+  // On Vercel, deploy at the root URL:
+  base: '/',                // or simply omit `base`
+  // NOTE: only VITE_* envs are exposed client-side: import.meta.env.VITE_*
 })
