@@ -7,4 +7,5 @@ export default defineConfig({
     'process.env': process.env
   },
   plugins: [react()],
+  base: process.env.VITE_BASE_PATH || '/Play-to-Secure',
 })
