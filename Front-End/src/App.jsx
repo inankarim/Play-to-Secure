@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Toaster } from "react-hot-toast";
 import { Loader } from "lucide-react";
 
@@ -9,21 +9,17 @@ import LoginPage from "./pages/LoginPage";
 import SignUpPage from "./pages/SignUpPage";
 import HomePage from "./pages/HomePage";
 import SettingsPage from "./pages/SettingsPage";
-
-
 import ProfilePage from "./pages/ProfilePage";
 import AttackDetails from "./pages/AttackDetails";
 import Leaderboard from "./pages/Leaderboard";
-
 import AdminLoginPage from "./pages/AdminLoginPage";
 import AdminQuizPage from "./pages/AdminQuizPage";
+import PostPage from "./pages/PostPage";
+import QuizHomePage from "./pages/QuizHomePage";
+import QuizPage from "./pages/QuizPage";
 
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
-
-import PostPage from "./pages/PostPage";  // Import PostPage component
-import QuizHomePage from "./pages/QuizHomePage";
-import QuizPage from "./pages/QuizPage";
 
 const App = () => {
   const location = useLocation();
@@ -34,6 +30,9 @@ const App = () => {
     checkAuth();
   }, [checkAuth]);
 
+  // Hide navbar ONLY on /quizHome
+  const hideNavbar = useMemo(() => location.pathname === "/quizHome", [location.pathname]);
+
   if (isCheckingAuth && !authUser) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -42,11 +41,9 @@ const App = () => {
     );
   }
 
-  const isAdminRoute = location.pathname.startsWith("/admin");
-
   return (
     <div data-theme={theme}>
-      {!isAdminRoute && <Navbar />}
+      {!hideNavbar && <Navbar />}
 
       <Routes>
         {/* Main User Routes */}
@@ -61,8 +58,7 @@ const App = () => {
         <Route path="/quizHome" element={authUser ? <QuizHomePage /> : <Navigate to="/login" />} />
         <Route path="/quiz/:category/:difficulty/:level" element={authUser ? <QuizPage /> : <Navigate to="/login" />} />
 
-
-        {/* Admin Routes */}
+        {/* Admin Routes (Navbar WILL show) */}
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/quiz" element={<AdminQuizPage />} />
 
