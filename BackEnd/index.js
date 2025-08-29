@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://play-to-secure-19ts.vercel.app",
     credentials: true,
   })
 );
