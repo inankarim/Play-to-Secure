@@ -14,7 +14,9 @@ export const axiosInstance = axios.create({
 // It's highly recommended to store your API key in an environment variable
 // For example, in a .env.local file: VITE_GEMINI_API_KEY=your_key_here
 // Then access it with import.meta.env.VITE_GEMINI_API_KEY
+
 const GEMINI_API_KEY = "AIzaSyAXIUcuxhQ1W_XaoKAP8H9M8ggeN5Od2Xc" // Replace with your key or use env variable
+
 
 // Create axios instance for AI-related API requests (e.g., ChatGPT, Google Gemini)
 export const aiAxiosInstance = axios.create({
