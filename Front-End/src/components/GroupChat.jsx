@@ -45,7 +45,7 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
       const q = query.trim().toLowerCase();
       const filtered = !q
         ? users
-        : users.filter((u) => (u.name || u.fullName || '').toLowerCase().includes(q));
+        : users.filter((u) => (u.name || u.fullName || u.email||'').toLowerCase().includes(q));
       setVisible(filtered);
     }, 150);
 
@@ -206,3 +206,15 @@ export default function GroupChat({ onGroupCreated, currentUser, onCancel }) {
     </div>
   );
 }
+
+
+
+
+// const allowedSelectedIds = users
+//   .filter(u => selectedIds.has(u._id) && !u.groupId) // only those not in a group
+//   .map(u => u._id);
+
+// const members = Array.from(new Set([...allowedSelectedIds, me._id]));
+
+
+
