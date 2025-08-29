@@ -1,43 +1,54 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/useAuthStore";
-import { Camera, Mail, User, Target } from "lucide-react"; // Ensure 'Target' icon is imported
+import { Camera, Mail, User, Target } from "lucide-react";
 
 const ProfilePage = () => {
   const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+
+  // Editable profile fields
   const [selectedImg, setSelectedImg] = useState(null);
   const [universityName, setUniversityName] = useState(authUser?.universityName || "");
   const [experienceLevel, setExperienceLevel] = useState(authUser?.experienceLevel || "Beginner");
-  const [points, setPoints] = useState(authUser?.points || 0);  // Points state
-  const [badge, setBadge] = useState(authUser?.badge || "Bronze");  // Badge state
 
-  // Automatically calculate badge based on points
+  // --- Points & Badges (read-only from backend) ---
+  // Points now use totalPoints from your schema
+  const [points, setPoints] = useState(authUser?.totalPoints || 0);
+
+  // Unified badge count: prefer badgeCount (int) -> badges.length (array) -> legacy badge (int)
+  const computeBadgeCount = (u) =>
+    Number(
+      (u?.badgeCount ??
+        (Array.isArray(u?.badges) ? u.badges.length : undefined) ??
+        u?.badge ??
+        0) || 0
+    );
+  const [badgeCount, setBadgeCount] = useState(computeBadgeCount(authUser));
+
+  // Badge "tier" label derived from points (for display only)
+  const [badgeTier, setBadgeTier] = useState("No badges earned so far");
+
+  // Recompute tier whenever points change
   useEffect(() => {
-    if (points >= 50) {
-      setBadge("Gold");
-    } else if (points >= 10) {
-      setBadge("Silver");
-    } else if (points > 0){
-      setBadge("Bronze");
-    }else{
-      setBadge ("No badges earned so far")
-    }
-      
-    
+    if (points >= 50) setBadgeTier("Gold");
+    else if (points >= 10) setBadgeTier("Silver");
+    else if (points > 0) setBadgeTier("Bronze");
+    else setBadgeTier("No badges earned so far");
   }, [points]);
 
+  // Keep points & badgeCount in sync when authUser changes
   useEffect(() => {
-    // Automatically update points when user's points change
-    setPoints(authUser?.points || 0);
+    setPoints(authUser?.totalPoints || 0);
+    setBadgeCount(computeBadgeCount(authUser));
+    setUniversityName(authUser?.universityName || "");
+    setExperienceLevel(authUser?.experienceLevel || "Beginner");
   }, [authUser]);
 
-  // Function to handle image upload
+  // --- Handlers ---
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
     reader.readAsDataURL(file);
-
     reader.onload = async () => {
       const base64Image = reader.result;
       setSelectedImg(base64Image);
@@ -45,18 +56,16 @@ const ProfilePage = () => {
     };
   };
 
-  // Function to update university name
   const handleUniversityUpdate = async () => {
     await updateProfile({ universityName });
   };
 
-  // Function to update experience level
   const handleExperienceLevelUpdate = async () => {
     await updateProfile({ experienceLevel });
   };
 
   return (
-    <div className="bg-[#1f1f1f] "> {/* Dark background for the profile page */}
+    <div className="bg-[#1f1f1f]">
       <div className="pt-20">
         <div className="max-w-2xl mx-auto p-4 py-8 bg-base-300 rounded-xl">
           <div className="p-6 space-y-8">
@@ -65,17 +74,19 @@ const ProfilePage = () => {
               <p className="mt-2">Your Profile</p>
             </div>
 
-            {/* Avatar Upload Section */}
+            {/* Avatar Upload */}
             <div className="flex flex-col items-center gap-4">
               <div className="relative">
                 <img
-                  src={selectedImg || authUser.profilePic || "/avatar.png"}
+                  src={selectedImg || authUser?.profilePic || "/avatar.png"}
                   alt="Profile"
                   className="size-32 rounded-full object-cover border-4"
                 />
                 <label
                   htmlFor="avatar-upload"
-                  className={`absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${isUpdatingProfile ? "animate-pulse pointer-events-none" : ""}`}
+                  className={`absolute bottom-0 right-0 bg-base-content hover:scale-105 p-2 rounded-full cursor-pointer transition-all duration-200 ${
+                    isUpdatingProfile ? "animate-pulse pointer-events-none" : ""
+                  }`}
                 >
                   <Camera className="w-5 h-5 text-base-200" />
                   <input
@@ -93,7 +104,7 @@ const ProfilePage = () => {
               </p>
             </div>
 
-            {/* Full Name Section */}
+            {/* Full Name */}
             <div className="space-y-6">
               <div className="space-y-1.5">
                 <div className="text-sm text-zinc-400 flex items-center gap-2">
@@ -107,13 +118,15 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              {/* Email Section */}
+              {/* Email */}
               <div className="space-y-1.5">
                 <div className="text-sm text-zinc-400 flex items-center gap-2">
                   <Mail className="w-4 h-4" />
                   Email Address
                 </div>
-                <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.email}</p>
+                <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                  {authUser?.email}
+                </p>
               </div>
             </div>
 
@@ -168,7 +181,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Points Section (Auto-updated) */}
+            {/* Points (from totalPoints) */}
             <div className="space-y-1.5">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
                 <User className="w-4 h-4" />
@@ -181,27 +194,30 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            {/* Badge Section (Auto-updated based on points) */}
+            {/* Badges: count + tier label (tier based on points) */}
             <div className="space-y-1.5">
               <div className="text-sm text-zinc-400 flex items-center gap-2">
                 <Target className="w-4 h-4" />
-                Badge Earned
+                Badges
               </div>
-              <div className="flex gap-2">
-                <p className="px-4 py-2.5 bg-base-200 rounded-lg border flex-1">
-                  {badge} Badge
+              <div className="flex flex-col gap-2">
+                <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                  {badgeCount} {badgeCount === 1 ? "Badge" : "Badges"} Collected
+                </p>
+                <p className="px-4 py-2.5 bg-base-200 rounded-lg border">
+                  Tier: {badgeTier}
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Account Information */}
+          {/* Account Info */}
           <div className="mt-6 bg-base-300 rounded-xl p-6">
             <h2 className="text-lg font-medium mb-4">Account Information</h2>
             <div className="space-y-3 text-sm">
               <div className="flex items-center justify-between py-2 border-b border-zinc-700">
                 <span>Member Since</span>
-                <span>{authUser.createdAt?.split("T")[0]}</span>
+                <span>{authUser?.createdAt?.split?.("T")?.[0] || "—"}</span>
               </div>
               <div className="flex items-center justify-between py-2">
                 <span>Account Status</span>
