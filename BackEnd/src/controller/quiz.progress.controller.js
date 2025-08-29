@@ -275,4 +275,217 @@ export const getTotalOrder = async (req, res) => {
     console.error("getTotalOrder error:", error);
     return res.status(500).json({ success: false, message: "Error fetching total order", error: error.message });
   }
+  
+
+};
+// GET /quiz/flow/answered-trail
+export const getAnsweredTrail = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { category, level, difficulty, limit = 50 } = req.query;
+
+    if (!category || !level) {
+      return res.status(400).json({ success: false, message: "category and level are required" });
+    }
+
+    const pipeline = [
+      { $match: { userId: userId, category: category, level: Number(level) } }, // category, level exist here
+      {
+        $lookup: {
+          from: "sqlquizzes", // collection name from the quiz schema
+          localField: "questionId",
+          foreignField: "_id",
+          as: "q"
+        }
+      },
+      { $unwind: "$q" },
+      // Filter by difficulty from the question doc (difficulty isn't in userresponses)
+      ...(difficulty ? [{ $match: { "q.difficulty": difficulty } }] : []),
+      // Only active questions (defensive)
+      { $match: { "q.isActive": true } },
+      // Sort by level then order (then creation as tiebreaker)
+      { $sort: { "q.level": 1, "q.order": 1, createdAt: 1 } },
+      {
+        $project: {
+          _id: 1,
+          createdAt: 1,
+          selectedAnswer: 1,
+          isCorrect: 1,
+          pointsEarned: 1,
+          timeTaken: 1,
+          // Flatten the question fields you need for review:
+          questionId: "$q._id",
+          question: "$q.question",
+          scenario: "$q.scenario",
+          options: "$q.options",
+          level: "$q.level",
+          category: "$q.category",
+          difficulty: "$q.difficulty",
+          order: "$q.order",
+          // Include answer & explanation for review
+          correctAnswer: "$q.correctAnswer",
+          explanation: "$q.explanation",
+          points: "$q.points",
+          timeLimit: "$q.timeLimit"
+        }
+      },
+      { $limit: Math.min(Number(limit) || 50, 500) }
+    ];
+
+    const docs = await req.db.UserResponse.aggregate(pipeline);
+    return res.json({ success: true, data: { trail: docs, total: docs.length } });
+  } catch (e) {
+    console.error("getAnsweredTrail error:", e);
+    return res.status(500).json({ success: false, message: "Error fetching answered trail", error: e.message });
+  }
+};
+// GET /quiz/flow/answered-prev
+export const getAnsweredPrev = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { category, level, difficulty, order } = req.query;
+
+    if (!category || !level || typeof order === "undefined") {
+      return res.status(400).json({ success: false, message: "category, level and order are required" });
+    }
+
+    const pipeline = [
+      { $match: { userId: userId, category: category, level: Number(level) } },
+      {
+        $lookup: {
+          from: "sqlquizzes",
+          localField: "questionId",
+          foreignField: "_id",
+          as: "q"
+        }
+      },
+      { $unwind: "$q" },
+      ...(difficulty ? [{ $match: { "q.difficulty": difficulty } }] : []),
+      { $match: { "q.isActive": true, "q.order": { $lt: Number(order) } } },
+      { $sort: { "q.order": -1, createdAt: -1 } },
+      { $limit: 1 },
+      {
+        $project: {
+          _id: 1,
+          createdAt: 1,
+          selectedAnswer: 1,
+          isCorrect: 1,
+          pointsEarned: 1,
+          timeTaken: 1,
+          questionId: "$q._id",
+          question: "$q.question",
+          scenario: "$q.scenario",
+          options: "$q.options",
+          level: "$q.level",
+          category: "$q.category",
+          difficulty: "$q.difficulty",
+          order: "$q.order",
+          correctAnswer: "$q.correctAnswer",
+          explanation: "$q.explanation",
+          points: "$q.points",
+          timeLimit: "$q.timeLimit"
+        }
+      }
+    ];
+
+    const [doc] = await req.db.UserResponse.aggregate(pipeline);
+    return res.json({ success: true, data: doc || null });
+  } catch (e) {
+    console.error("getAnsweredPrev error:", e);
+    return res.status(500).json({ success: false, message: "Error fetching previous answered item", error: e.message });
+  }
+};
+// controller/quiz.progress.controller.js
+// ... (keep all existing imports and functions)
+
+// GET /api/quiz/progress/last-answered
+// Finds the last answered question in a specific segment for a user.
+export const getLastAnswered = async (req, res) => {
+  try {
+    const userId = resolveUserId(req);
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "User not authenticated" });
+    }
+
+    const { category, difficulty = "Easy", level = 1 } = req.query;
+    if (!category) {
+      return res.status(400).json({ success: false, message: "Category is required" });
+    }
+
+    const pipeline = [
+      // Match user's responses
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      // Join with questions to filter by category, difficulty, etc.
+      {
+        $lookup: {
+          from: "sqlquizzes",
+          localField: "questionId",
+          foreignField: "_id",
+          as: "q"
+        }
+      },
+      { $unwind: "$q" },
+      // Apply filters from query
+      { $match: { "q.category": category, "q.difficulty": difficulty, "q.level": Number(level), "q.isActive": true } },
+      // Sort by the question order descending to get the last one first
+      { $sort: { "q.order": -1 } },
+      // Limit to only the most recent one
+      { $limit: 1 },
+      // Project the needed fields
+      {
+        $project: {
+          _id: 0, // Exclude the response ID
+          question: {
+             _id: "$q._id",
+             question: "$q.question",
+             scenario: "$q.scenario",
+             options: "$q.options",
+             points: "$q.points",
+             order: "$q.order"
+          },
+          selectedAnswer: "$selectedAnswer",
+          isCorrect: "$isCorrect",
+          correctAnswer: "$q.correctAnswer",
+          explanation: "$q.explanation"
+        }
+      }
+    ];
+
+    const [lastAnswered] = await UserResponse.aggregate(pipeline);
+
+    if (!lastAnswered) {
+      // It's not an error if they haven't answered one yet.
+      // The frontend will use this to know it should fetch the *first* question.
+      return res.status(404).json({ success: false, message: "No answered questions found for this segment." });
+    }
+
+    return res.json({ success: true, data: lastAnswered });
+
+  } catch (e) {
+    console.error("getLastAnswered error:", e);
+    return res.status(500).json({ success: false, message: "Server error fetching last answer" });
+  }
+};
+export const getAnsweredHistory = async (req, res) => {
+  try {
+    const userId = resolveUserId(req);
+    if (!userId) return res.status(401).json({ message: "User not authenticated" });
+
+    const { category, difficulty = "Easy", level = 1 } = req.query;
+    if (!category) return res.status(400).json({ message: "Category is required" });
+
+    const history = await UserResponse.aggregate([
+        { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+        { $lookup: { from: "sqlquizzes", localField: "questionId", foreignField: "_id", as: "q" } },
+        { $unwind: "$q" },
+        { $match: { "q.category": category, "q.difficulty": difficulty, "q.level": Number(level) } },
+        { $sort: { "q.order": 1 } },
+        { $project: { _id: 0, question: "$q", selectedAnswer: 1, isCorrect: 1, explanation: "$q.explanation", correctAnswer: "$q.correctAnswer" } }
+    ]);
+    
+    return res.json({ success: true, data: history });
+  } catch (e) {
+    console.error("getAnsweredHistory error:", e);
+    return res.status(500).json({ message: "Server error" });
+  }
 };
