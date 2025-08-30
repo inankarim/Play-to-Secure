@@ -1,65 +1,101 @@
 import { X, Users, Info, UserMinus, LogOut, UserPlus, Search, Edit3 } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useGroupChatStore } from "../store/useGroupChatStore";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { axiosInstance } from "../lib/axios";
 
 const GroupChatHeader = () => {
   const { selectedGroup, setSelectedGroup } = useGroupChatStore();
-  const { onlineUsers, authUser } = useAuthStore();
+  const { onlineUsers = [], authUser } = useAuthStore();
+
   const [showGroupInfo, setShowGroupInfo] = useState(false);
   const [showConfirmLeave, setShowConfirmLeave] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState(null);
   const [showConfirmRemove, setShowConfirmRemove] = useState(false);
+
   const [showAddMember, setShowAddMember] = useState(false);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUsersToAdd, setSelectedUsersToAdd] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+
   const [showRenameGroup, setShowRenameGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [renamingGroup, setRenamingGroup] = useState(false);
 
   if (!selectedGroup) return null;
 
-  const onlineMembers = selectedGroup.members.filter(member => 
-    onlineUsers.includes(member._id)
+  // Current user is creator? (handles string/object id shapes)
+  const isGroupCreator =
+    authUser?._id === selectedGroup?.createdBy ||
+    authUser?._id === selectedGroup?.createdBy?._id ||
+    authUser?._id?.toString?.() === selectedGroup?.createdBy?.toString?.() ||
+    authUser?._id?.toString?.() === selectedGroup?.createdBy?._id?.toString?.();
+
+  const onlineMembers = (selectedGroup.members || []).filter((m) =>
+    (onlineUsers || []).includes(m._id)
   );
 
-  // Handle leaving the group
+  // ========= Actions =========
+
+  // Leave group
   const handleLeaveGroup = async () => {
+    if (!selectedGroup?._id) {
+      toast.error("No group selected");
+      return;
+    }
     try {
-      const res = await axiosInstance.delete(`/group/${selectedGroup._id}/leave`);
+      // If your API expects POST instead of DELETE, switch it:
+      // await axiosInstance.post(`/group/${selectedGroup._id}/leave`, null, { withCredentials: true });
+      await axiosInstance.delete(`/group/${selectedGroup._id}/leave`, {
+        withCredentials: true,
+      });
+
       toast.success("You left the group!");
       setSelectedGroup(null);
       setShowConfirmLeave(false);
+      setShowGroupInfo(false);
     } catch (error) {
-      toast.error("Failed to leave the group");
       console.error("Leave group error:", error);
+      if (error?.response?.status === 405) {
+        toast.error("Method not allowed. Try POST instead of DELETE on the server.");
+      } else {
+        toast.error("Failed to leave the group");
+      }
     }
   };
 
-  // Handle removing a member
+  // Remove a member (creator only)
   const handleRemoveMember = async (memberId) => {
+    if (!selectedGroup?._id) return;
+
+    if (!isGroupCreator) {
+      toast.error("Only the group creator can remove members");
+      return;
+    }
+
     try {
-      const res = await axiosInstance.delete(`/group/${selectedGroup._id}/removeUser`, {
-        data: { userId: memberId }
-      });
-      
+      const res = await axiosInstance.delete(
+        `/group/${selectedGroup._id}/removeUser`,
+        {
+          data: { userId: memberId },
+          withCredentials: true,
+        }
+      );
+
       if (res.status === 200) {
         toast.success("Member removed from the group!");
-        
-        // Update the group data in state after member is removed
+
         const updatedSelectedGroup = {
           ...selectedGroup,
-          members: selectedGroup.members.filter(member => member._id !== memberId)
+          members: (selectedGroup.members || []).filter((m) => m._id !== memberId),
         };
         setSelectedGroup(updatedSelectedGroup);
       }
     } catch (error) {
       console.error("Remove member error:", error);
-      if (error.response?.status === 403) {
+      if (error?.response?.status === 403) {
         toast.error("Only the group creator can remove members");
       } else {
         toast.error("Failed to remove member");
@@ -70,31 +106,37 @@ const GroupChatHeader = () => {
     }
   };
 
-  // Initialize remove member process
   const initiateRemoveMember = (memberId) => {
     setMemberToRemove(memberId);
     setShowConfirmRemove(true);
   };
 
-  // Get member name for confirmation dialog
   const getMemberName = (memberId) => {
-    const member = selectedGroup.members.find(m => m._id === memberId);
-    return member ? (member.name || member.fullName) : 'Unknown';
-  };
+    const member = (selectedGroup.members || []).find((m) => m._id === memberId);
+    return member ? member.name || member.fullName || "Unknown" : "Unknown";
+    };
 
-  // Fetch available users to add to group
+  // Fetch users that are not in this group (creator only)
   const fetchAvailableUsers = async () => {
+    if (!isGroupCreator) {
+      toast.error("Only the group creator can add members");
+      return;
+    }
     try {
       setLoadingUsers(true);
-      const response = await axiosInstance.get('/messages/users'); // Use the same endpoint as GroupChat
-      
-      // Filter out users who are already in the group
-      const currentMemberIds = selectedGroup.members.map(member => member._id);
-      const availableUsersFiltered = response.data.filter(user => 
-        !currentMemberIds.includes(user._id)
-      );
-      
-      setAvailableUsers(availableUsersFiltered);
+      const response = await axiosInstance.get("/messages/users", {
+        withCredentials: true,
+      });
+
+      const raw =
+        Array.isArray(response.data) ? response.data :
+        Array.isArray(response.data?.users) ? response.data.users :
+        Array.isArray(response.data?.data) ? response.data.data :
+        [];
+
+      const currentIds = new Set((selectedGroup.members || []).map((m) => m._id));
+      const filtered = raw.filter((u) => !currentIds.has(u._id));
+      setAvailableUsers(filtered);
     } catch (error) {
       console.error("Error fetching users:", error);
       toast.error("Failed to load users");
@@ -103,53 +145,56 @@ const GroupChatHeader = () => {
     }
   };
 
-  // Handle opening add member modal
   const handleOpenAddMember = () => {
+    if (!isGroupCreator) {
+      toast.error("Only the group creator can add members");
+      return;
+    }
     setShowAddMember(true);
     setSearchTerm("");
     setSelectedUsersToAdd([]);
     fetchAvailableUsers();
   };
 
-  // Handle adding members to the group
+  // Add selected members (creator only)
   const handleAddMembers = async () => {
+    if (!isGroupCreator) {
+      toast.error("Only the group creator can add members");
+      return;
+    }
     if (selectedUsersToAdd.length === 0) {
       toast.error("Please select at least one user to add");
       return;
     }
 
     try {
-      // Add each selected user to the group
+      // If your backend supports batch add, replace this loop with one request.
       for (const userId of selectedUsersToAdd) {
-        await axiosInstance.put(`/group/${selectedGroup._id}/addUser`, {
-          userId: userId
-        });
+        await axiosInstance.put(
+          `/group/${selectedGroup._id}/addUser`,
+          { userId },
+          { withCredentials: true }
+        );
       }
 
-      toast.success(`Successfully added ${selectedUsersToAdd.length} member(s) to the group!`);
-      
-      // Refresh the group data or update local state
-      // You might want to fetch updated group info or update selectedGroup state
-      const updatedMembers = [
-        ...selectedGroup.members,
-        ...availableUsers.filter(user => selectedUsersToAdd.includes(user._id))
-      ];
-      
+      toast.success(`Added ${selectedUsersToAdd.length} member(s)!`);
+
+      const newlyAdded = availableUsers.filter((u) =>
+        selectedUsersToAdd.includes(u._id)
+      );
+      setSelectedUsersToAdd([]);
+
       const updatedGroup = {
         ...selectedGroup,
-        members: updatedMembers
+        members: [...(selectedGroup.members || []), ...newlyAdded],
       };
-      
       setSelectedGroup(updatedGroup);
-      
-      // Close the modal and reset state
+
       setShowAddMember(false);
-      setSelectedUsersToAdd([]);
       setSearchTerm("");
-      
     } catch (error) {
       console.error("Error adding members:", error);
-      if (error.response?.status === 403) {
+      if (error?.response?.status === 403) {
         toast.error("You don't have permission to add members");
       } else {
         toast.error("Failed to add members to the group");
@@ -157,64 +202,62 @@ const GroupChatHeader = () => {
     }
   };
 
-  // Handle selecting/deselecting users to add
   const toggleUserSelection = (userId) => {
-    setSelectedUsersToAdd(prev => 
-      prev.includes(userId) 
-        ? prev.filter(id => id !== userId)
+    setSelectedUsersToAdd((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
         : [...prev, userId]
     );
   };
 
-  // Filter users based on search term
-  const filteredUsers = availableUsers.filter(user =>
-    (user.name || user.fullName || '').toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredUsers = (availableUsers || []).filter((u) =>
+    (u.name || u.fullName || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Handle opening rename group modal
+  // Rename group (creator only)
   const handleOpenRenameGroup = () => {
-    setNewGroupName(selectedGroup.name);
+    if (!isGroupCreator) {
+      toast.error("Only the group creator can rename the group");
+      return;
+    }
+    setNewGroupName(selectedGroup?.name || "");
     setShowRenameGroup(true);
   };
 
-  // Handle renaming the group
   const handleRenameGroup = async () => {
-    if (!newGroupName.trim()) {
+    if (!isGroupCreator) {
+      toast.error("Only the group creator can rename the group");
+      return;
+    }
+    const trimmed = (newGroupName || "").trim();
+    if (!trimmed) {
       toast.error("Group name cannot be empty");
       return;
     }
-
-    if (newGroupName.trim() === selectedGroup.name) {
+    if (trimmed === selectedGroup?.name) {
       toast.error("Please enter a different name");
       return;
     }
 
     try {
       setRenamingGroup(true);
-      
-      const response = await axiosInstance.put(`/group/${selectedGroup._id}/rename`, {
-        name: newGroupName.trim()
-      });
+      const response = await axiosInstance.put(
+        `/group/${selectedGroup._id}/rename`,
+        { name: trimmed },
+        { withCredentials: true }
+      );
 
       if (response.status === 200) {
-        toast.success("Group name updated successfully!");
-        
-        // Update the group name in local state
-        const updatedGroup = {
-          ...selectedGroup,
-          name: newGroupName.trim()
-        };
-        setSelectedGroup(updatedGroup);
-        
-        // Close the modal
+        toast.success("Group name updated!");
+        setSelectedGroup({ ...selectedGroup, name: trimmed });
         setShowRenameGroup(false);
         setNewGroupName("");
       }
     } catch (error) {
       console.error("Error renaming group:", error);
-      if (error.response?.status === 403) {
+      if (error?.response?.status === 403) {
         toast.error("Only the group creator can rename the group");
-      } else if (error.response?.status === 400) {
+      } else if (error?.response?.status === 400) {
         toast.error("Invalid group name");
       } else {
         toast.error("Failed to rename group");
@@ -223,19 +266,6 @@ const GroupChatHeader = () => {
       setRenamingGroup(false);
     }
   };
-
-  // Check if current user is the group creator - handle both string and object comparisons
-  const isGroupCreator = authUser._id === selectedGroup.createdBy || 
-                         authUser._id === selectedGroup.createdBy?._id ||
-                         authUser._id.toString() === selectedGroup.createdBy?.toString() ||
-                         authUser._id.toString() === selectedGroup.createdBy?._id?.toString();
-
-  // Debug log to check creator status
-  console.log("Creator Check Debug:", {
-    authUserId: authUser._id,
-    groupCreatedBy: selectedGroup.createdBy,
-    isCreator: isGroupCreator
-  });
 
   return (
     <>
@@ -247,20 +277,18 @@ const GroupChatHeader = () => {
               <div className="size-10 rounded-full relative bg-primary/20 flex items-center justify-center">
                 <Users className="size-5 text-primary" />
                 <span className="absolute -bottom-1 -right-1 size-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center">
-                  {selectedGroup.members.length}
+                  {selectedGroup.members?.length || 0}
                 </span>
               </div>
             </div>
 
             {/* Group info */}
             <div>
-              <h3 className="font-medium">{selectedGroup.name}</h3>
+              <h3 className="font-medium">{selectedGroup?.name}</h3>
               <p className="text-sm text-base-content/70">
-                {selectedGroup.members.length} members
-                {onlineMembers.length > 0 && (
-                  <span className="text-green-600">
-                    , {onlineMembers.length} online
-                  </span>
+                {selectedGroup.members?.length || 0} members
+                {(onlineMembers?.length || 0) > 0 && (
+                  <span className="text-green-600">, {onlineMembers.length} online</span>
                 )}
               </p>
             </div>
@@ -268,12 +296,18 @@ const GroupChatHeader = () => {
 
           <div className="flex items-center gap-2">
             {/* Group Info Button */}
-            <button onClick={() => setShowGroupInfo(true)} className="btn btn-ghost btn-sm btn-circle">
+            <button
+              onClick={() => setShowGroupInfo(true)}
+              className="btn btn-ghost btn-sm btn-circle"
+            >
               <Info className="size-4" />
             </button>
 
-            {/* Close button */}
-            <button onClick={() => setSelectedGroup(null)} className="btn btn-ghost btn-sm btn-circle">
+            {/* Close */}
+            <button
+              onClick={() => setSelectedGroup(null)}
+              className="btn btn-ghost btn-sm btn-circle"
+            >
               <X className="size-4" />
             </button>
           </div>
@@ -285,12 +319,12 @@ const GroupChatHeader = () => {
         <div className="modal modal-open">
           <div className="modal-box">
             <h3 className="font-bold text-lg mb-4">Group Information</h3>
-            
+
             <div className="space-y-4">
+              {/* Name + Rename */}
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium">Group Name:</label>
-                  {/* Rename Button - Only show for group creators */}
                   {isGroupCreator && (
                     <button
                       onClick={handleOpenRenameGroup}
@@ -302,13 +336,18 @@ const GroupChatHeader = () => {
                     </button>
                   )}
                 </div>
-                <p className="text-base-content/80 font-medium">{selectedGroup.name}</p>
+                <p className="text-base-content/80 font-medium">
+                  {selectedGroup?.name}
+                </p>
               </div>
 
+              {/* Members */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <label className="text-sm font-medium">Members ({selectedGroup.members.length}):</label>
-                  {/* Add Member Button - Only show for group creators */}
+                  <label className="text-sm font-medium">
+                    Members ({selectedGroup.members?.length || 0}):
+                  </label>
+
                   {isGroupCreator && (
                     <button
                       onClick={handleOpenAddMember}
@@ -320,50 +359,70 @@ const GroupChatHeader = () => {
                     </button>
                   )}
                 </div>
+
                 <div className="mt-2 space-y-2">
-                  {selectedGroup.members.map((member) => (
-                    <div key={member._id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200">
-                      <img
-                        src={member.avatarUrl || member.profilePic || "/avatar.png"}
-                        alt={member.name}
-                        className="size-8 rounded-full"
-                      />
-                      <div className="flex-1">
-                        <span className="text-sm font-medium">{member.name || member.fullName}</span>
-                        <span className={`ml-2 text-xs px-2 py-1 rounded-full ${onlineUsers.includes(member._id) ? 'text-green-700 bg-green-100' : 'text-gray-500 bg-gray-100'}`}>
-                          {onlineUsers.includes(member._id) ? 'Online' : 'Offline'}
-                        </span>
-                        {/* Show creator badge */}
-                        {(member._id === selectedGroup.createdBy || member._id === selectedGroup.createdBy?._id) && (
-                          <span className="ml-2 text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
-                            Creator
+                  {(selectedGroup.members || []).map((member) => {
+                    const isCreatorBadge =
+                      member._id === selectedGroup?.createdBy ||
+                      member._id === selectedGroup?.createdBy?._id;
+
+                    const isSelf = authUser?._id === member._id;
+
+                    return (
+                      <div
+                        key={member._id}
+                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-base-200"
+                      >
+                        <img
+                          src={member.avatarUrl || member.profilePic || "/avatar.png"}
+                          alt={member.name || "member"}
+                          className="size-8 rounded-full"
+                        />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium">
+                            {member.name || member.fullName || "Unknown"}
                           </span>
-                        )}
-                      </div>
-                      {/* Always show remove button for testing - Remove this condition later */}
-                      {authUser._id !== member._id && (
-                        <div className="flex items-center gap-2">
-                          {/* Debug info - Remove this after testing */}
-                          <span className="text-xs text-gray-400">
-                            {isGroupCreator ? "Can Remove" : "Cannot Remove"}
+                          <span
+                            className={`ml-2 text-xs px-2 py-1 rounded-full ${
+                              (onlineUsers || []).includes(member._id)
+                                ? "text-green-700 bg-green-100"
+                                : "text-gray-500 bg-gray-100"
+                            }`}
+                          >
+                            {(onlineUsers || []).includes(member._id) ? "Online" : "Offline"}
                           </span>
-                          <button 
+                          {isCreatorBadge && (
+                            <span className="ml-2 text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-700">
+                              Creator
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Remove (creator only, can't remove self) */}
+                        {!isSelf && (
+                          <button
                             onClick={() => initiateRemoveMember(member._id)}
-                            className={`btn btn-sm ${isGroupCreator ? 'btn-error text-white' : 'btn-disabled'}`}
-                            title={isGroupCreator ? "Remove member" : "Only group creator can remove members"}
+                            className={`btn btn-sm ${
+                              isGroupCreator ? "btn-error text-white" : "btn-disabled"
+                            }`}
+                            title={
+                              isGroupCreator
+                                ? "Remove member"
+                                : "Only group creator can remove members"
+                            }
                             disabled={!isGroupCreator}
                           >
                             <UserMinus className="size-4" />
                             Remove
                           </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
-              {/* Leave Group Button - Show for all members (creator can also leave) */}
+              {/* Leave Group */}
               <div className="space-y-2">
                 <button
                   className="btn btn-error w-full"
@@ -376,7 +435,9 @@ const GroupChatHeader = () => {
             </div>
 
             <div className="modal-action">
-              <button className="btn" onClick={() => setShowGroupInfo(false)}>Close</button>
+              <button className="btn" onClick={() => setShowGroupInfo(false)}>
+                Close
+              </button>
             </div>
           </div>
         </div>
@@ -387,7 +448,7 @@ const GroupChatHeader = () => {
         <div className="modal modal-open">
           <div className="modal-box">
             <h3 className="font-bold text-lg mb-4">Rename Group</h3>
-            
+
             <div className="form-control mb-4">
               <label className="label">
                 <span className="label-text">New Group Name</span>
@@ -401,7 +462,7 @@ const GroupChatHeader = () => {
                 maxLength={50}
                 autoFocus
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !renamingGroup) {
+                  if (e.key === "Enter" && !renamingGroup) {
                     handleRenameGroup();
                   }
                 }}
@@ -413,13 +474,12 @@ const GroupChatHeader = () => {
               </label>
             </div>
 
-            {/* Current vs New Name Preview */}
-            {newGroupName.trim() && newGroupName.trim() !== selectedGroup.name && (
+            {newGroupName.trim() && newGroupName.trim() !== selectedGroup?.name && (
               <div className="alert alert-info mb-4">
                 <Info className="size-4" />
                 <div>
                   <div className="text-sm">
-                    <span className="font-medium">Current:</span> "{selectedGroup.name}"
+                    <span className="font-medium">Current:</span> "{selectedGroup?.name}"
                   </div>
                   <div className="text-sm">
                     <span className="font-medium">New:</span> "{newGroupName.trim()}"
@@ -429,10 +489,14 @@ const GroupChatHeader = () => {
             )}
 
             <div className="modal-action">
-              <button 
+              <button
                 onClick={handleRenameGroup}
                 className="btn btn-primary"
-                disabled={!newGroupName.trim() || newGroupName.trim() === selectedGroup.name || renamingGroup}
+                disabled={
+                  !newGroupName.trim() ||
+                  newGroupName.trim() === selectedGroup?.name ||
+                  renamingGroup
+                }
               >
                 {renamingGroup ? (
                   <>
@@ -440,10 +504,10 @@ const GroupChatHeader = () => {
                     Renaming...
                   </>
                 ) : (
-                  'Update Name'
+                  "Update Name"
                 )}
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowRenameGroup(false);
                   setNewGroupName("");
@@ -463,8 +527,7 @@ const GroupChatHeader = () => {
         <div className="modal modal-open">
           <div className="modal-box max-w-md">
             <h3 className="font-bold text-lg mb-4">Add Members to Group</h3>
-            
-            {/* Search Input */}
+
             <div className="form-control mb-4">
               <div className="input-group">
                 <span className="bg-base-200">
@@ -480,7 +543,6 @@ const GroupChatHeader = () => {
               </div>
             </div>
 
-            {/* Selected Users Count */}
             {selectedUsersToAdd.length > 0 && (
               <div className="alert alert-info mb-4">
                 <Info className="size-4" />
@@ -488,7 +550,6 @@ const GroupChatHeader = () => {
               </div>
             )}
 
-            {/* Users List */}
             <div className="max-h-60 overflow-y-auto">
               {loadingUsers ? (
                 <div className="flex justify-center py-4">
@@ -496,7 +557,7 @@ const GroupChatHeader = () => {
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center py-4 text-base-content/60">
-                  {searchTerm ? 'No users found matching your search' : 'No available users to add'}
+                  {searchTerm ? "No users found matching your search" : "No available users to add"}
                 </div>
               ) : (
                 <div className="space-y-2">
@@ -510,13 +571,15 @@ const GroupChatHeader = () => {
                       />
                       <img
                         src={user.avatarUrl || user.profilePic || "/avatar.png"}
-                        alt={user.name}
+                        alt={user.name || "user"}
                         className="size-8 rounded-full"
                       />
                       <div className="flex-1">
-                        <span className="text-sm font-medium">{user.name || user.fullName}</span>
+                        <span className="text-sm font-medium">
+                          {user.name || user.fullName || "Unknown"}
+                        </span>
                         <div className="text-xs text-base-content/60">
-                          {user.email || 'No email'}
+                          {user.email || "No email"}
                         </div>
                       </div>
                     </div>
@@ -525,16 +588,15 @@ const GroupChatHeader = () => {
               )}
             </div>
 
-            {/* Modal Actions */}
             <div className="modal-action">
-              <button 
+              <button
                 onClick={handleAddMembers}
                 className="btn btn-primary"
                 disabled={selectedUsersToAdd.length === 0 || loadingUsers}
               >
                 Add {selectedUsersToAdd.length} Member(s)
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowAddMember(false);
                   setSelectedUsersToAdd([]);
@@ -554,19 +616,14 @@ const GroupChatHeader = () => {
         <div className="modal modal-open">
           <div className="modal-box">
             <h3 className="text-lg font-bold">Leave Group</h3>
-            <p className="py-4">Are you sure you want to leave "{selectedGroup.name}"? You won't be able to see messages or rejoin unless someone adds you back.</p>
+            <p className="py-4">
+              Are you sure you want to leave "{selectedGroup?.name}"? You won't be able to see messages or rejoin unless someone adds you back.
+            </p>
             <div className="modal-action">
-              <button 
-                onClick={handleLeaveGroup} 
-                className="btn btn-error"
-                disabled={false}
-              >
+              <button onClick={handleLeaveGroup} className="btn btn-error">
                 Leave Group
               </button>
-              <button 
-                onClick={() => setShowConfirmLeave(false)} 
-                className="btn"
-              >
+              <button onClick={() => setShowConfirmLeave(false)} className="btn">
                 Cancel
               </button>
             </div>
@@ -580,21 +637,18 @@ const GroupChatHeader = () => {
           <div className="modal-box">
             <h3 className="text-lg font-bold">Remove Member</h3>
             <p className="py-4">
-              Are you sure you want to remove "{getMemberName(memberToRemove)}" from "{selectedGroup.name}"? 
+              Are you sure you want to remove "{getMemberName(memberToRemove)}" from "{selectedGroup?.name}"?
               They will no longer be able to see messages or participate in this group.
             </p>
             <div className="modal-action">
-              <button 
-                onClick={() => handleRemoveMember(memberToRemove)} 
-                className="btn btn-error"
-              >
+              <button onClick={() => handleRemoveMember(memberToRemove)} className="btn btn-error">
                 Remove Member
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowConfirmRemove(false);
                   setMemberToRemove(null);
-                }} 
+                }}
                 className="btn"
               >
                 Cancel
