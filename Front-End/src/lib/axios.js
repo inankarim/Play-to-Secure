@@ -2,7 +2,9 @@ import axios from "axios";
 
 // Create axios instance for quiz-related API requests
 export const axiosInstance = axios.create({
-  baseURL: import.meta.env.MODE === "development" ? "https://play-to-secure-19ts.vercel.app/api" : "/api",
+  baseURL: import.meta.env.MODE === "development" 
+  ? "http://localhost:5001/api"  // ✅ Your local backend
+  : "/api",
   withCredentials: true,
   timeout: 30000, // 30 seconds timeout (increased from 10 seconds)
   headers: {

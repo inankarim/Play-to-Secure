@@ -75,7 +75,9 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-
+// Enable virtuals in JSON
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 // Virtual for badge count
 userSchema.virtual('badgeCount').get(function() {
   return this.badges.length;
