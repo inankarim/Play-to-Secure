@@ -6,7 +6,7 @@ export default {
   theme: {
         extend: {
       fontFamily: {
-        chivo: ['Chivo', 'sans-serif'],
+        chivo: ['Chivo', 'sans-serif','Hind Kochi'],
         italianno: ['Italianno', 'cursive'],
       },
     },

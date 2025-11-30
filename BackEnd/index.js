@@ -14,7 +14,7 @@ import sqlRoutes from "./src/routes/sql.route.js";
 import postRoutes from "./src/routes/post.routes.js"; // New Facebook-style routes
 import quizRoutes from "./src/routes/quiz.route.js";
 import quoteRoutes from "./src/routes/quote.route.js"
-
+import shortQuestionRoutes from './src/routes/shortQuestionRoutes.js';
 import leaderboardRoutes from "./src/routes/leaderboard.route.js"
 
 // Socket.IO app/server (already wires up group socket events)
@@ -48,7 +48,7 @@ app.use("/api/quiz", sqlRoutes);
 // Facebook-style social media endpoints: /api/posts/...
 app.use("/api/post", postRoutes);
 
-
+app.use('/api/short-questions', shortQuestionRoutes);
 
 //////////////
 //add the quotes route

@@ -60,6 +60,13 @@ const Navbar = () => {
                   <User className="size-5" />
                   <span className="hidden sm:inline">Leaderboard</span>
                 </Link>
+                <Link to={"/level2"} className="btn btn-sm gap-2">
+                  <User className="size-5" />
+                  <span className="hidden sm:inline">Level2</span>
+                </Link>
+                
+                
+
 
                 <button className="flex gap-2 items-center" onClick={logout}>
                   <LogOut className="size-5" />

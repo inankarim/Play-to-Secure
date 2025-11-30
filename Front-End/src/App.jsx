@@ -20,6 +20,8 @@ import QuizPage from "./pages/QuizPage";
 
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
+import Sqlpage1 from "./level2/SQLPAGE/sqlpage1";
+import Sqlpage2 from "./level2/SQLPAGE/Sqlpage2";
 
 const App = () => {
   const location = useLocation();
@@ -31,7 +33,10 @@ const App = () => {
   }, [checkAuth]);
 
   // Hide navbar ONLY on /quizHome
-  const hideNavbar = useMemo(() => location.pathname === "/quizHome", [location.pathname]);
+const hideNavbar = useMemo(() => {
+  const noNavbarRoutes = ['/quizHome', '/level2', '/level2/sqlpage2'];
+  return noNavbarRoutes.includes(location.pathname);
+}, [location.pathname]);
 
   if (isCheckingAuth && !authUser) {
     return (
@@ -54,10 +59,14 @@ const App = () => {
         <Route path="/settings" element={authUser ? <SettingsPage /> : <Navigate to="/login" />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/leaderboard" element={authUser ? <Leaderboard /> : <Navigate to="/login" />} />
+        <Route path="/level2" element={authUser ? <Sqlpage1 /> : <Navigate to="/login" />} />
+        <Route path="/level2/sqlpage2" element={authUser ? <Sqlpage2 /> : <Navigate to="/login" />} />
+
+
         <Route path="/posts" element={authUser ? <PostPage /> : <Navigate to="/login" />} />
         <Route path="/quizHome" element={authUser ? <QuizHomePage /> : <Navigate to="/login" />} />
         <Route path="/quiz/:category/:difficulty/:level" element={authUser ? <QuizPage /> : <Navigate to="/login" />} />
-
+        
         {/* Admin Routes (Navbar WILL show) */}
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/quiz" element={<AdminQuizPage />} />

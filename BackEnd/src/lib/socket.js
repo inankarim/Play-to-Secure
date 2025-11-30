@@ -9,7 +9,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: { 
-    origin: ["https://play-to-secure-ec7f.vercel.app/", "http://localhost:5001"], 
+    // 🔧 FIXED: Added http://localhost:5173 (frontend URL) to allowed origins
+    origin: [
+      "http://localhost:5173",           // ✅ Development frontend
+      "http://localhost:5001",           // ✅ Development backend
+    ], 
     credentials: true,
     methods: ["GET", "POST"]
   },

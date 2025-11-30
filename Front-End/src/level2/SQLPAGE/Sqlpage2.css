@@ -1,0 +1,28 @@
+/* Force remove white background from treasure chest images */
+.treasure-frame-container img {
+    background: transparent !important;
+    background-color: transparent !important;
+    mix-blend-mode: normal;
+    isolation: isolate;
+}
+
+/* Alternative: Use multiply blend mode to remove white */
+.treasure-frame-container {
+    background: transparent;
+}
+
+/* Smooth rendering */
+img {
+    -webkit-backface-visibility: hidden;
+    -moz-backface-visibility: hidden;
+    -webkit-transform: translate3d(0, 0, 0);
+    -moz-transform: translate3d(0, 0, 0);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+/* Animation smoothing */
+* {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
