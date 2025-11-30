@@ -462,7 +462,7 @@ const Sqlpage1 = () => {
         >
           {isCompleted ? (
             // SHOW DOOR - QUESTION ALREADY ANSWERED
-            <div className="bg-gradient-to-br from-green-900 to-green-950 bg-opacity-90 p-8 md:p-12 rounded-3xl shadow-2xl border-4 border-green-400">
+            <div className=" p-8 md:p-12 rounded-3xl shadow-2xl">
               <motion.div
                 variants={doorVariants}
                 initial="hidden"
@@ -484,41 +484,7 @@ const Sqlpage1 = () => {
                     }}
                   />
                 </div>
-
-                <h1 className="text-white text-4xl md:text-5xl lg:text-6xl font-bold text-center mb-4">
-                  🎉 Challenge Complete!
-                </h1>
-                
-                <p className="text-green-300 text-xl md:text-2xl lg:text-3xl font-medium text-center leading-relaxed mb-6">
-                  The stone door stands open! You've successfully configured the authentication system. Your family can now enter safely.
-                </p>
-
-                <div className="bg-green-800/40 border-2 border-green-400 rounded-xl p-6 w-full max-w-2xl">
-                  <div className="flex items-center justify-center gap-3 mb-3">
-                    <svg className="w-8 h-8 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <h2 className="text-green-300 font-bold text-2xl">Quest Completed</h2>
-                  </div>
-                  
-                  <div className="space-y-2 text-center">
-                    <p className="text-green-200 text-lg">
-                      ✅ SQL Authentication Query Mastered
-                    </p>
-                    <p className="text-green-200 text-lg">
-                      🏆 +{POINTS} Points Earned
-                    </p>
-                    <p className="text-green-200 text-lg">
-                      📊 Progress Saved
-                    </p>
-                  </div>
-                </div>
-
-                <div className="mt-8 text-center">
-                  <p className="text-white/80 text-lg italic mb-6">
-                    "The mighty Lion protects his domain with wisdom and code."
-                  </p>
-                  
+                <div className="mt-8 text-center">                 
                   {/* Continue Button */}
                   <button
                     onClick={() => navigate('/level2/sqlpage2')}
