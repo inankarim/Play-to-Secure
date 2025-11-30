@@ -23,6 +23,7 @@ import { useThemeStore } from "./store/useThemeStore";
 import Sqlpage1 from "./level2/SQLPAGE/sqlpage1";
 import Sqlpage2 from "./level2/SQLPAGE/Sqlpage2";
 import Sqlpage3 from "./level2/SQLPAGE/Sqlpage3";
+import Sqlpage4 from "./level2/SQLPAGE/Sqlpage4";
 
 const App = () => {
   const location = useLocation();
@@ -35,7 +36,7 @@ const App = () => {
 
   // Hide navbar ONLY on /quizHome
 const hideNavbar = useMemo(() => {
-  const noNavbarRoutes = ['/quizHome', '/level2', '/level2/sqlpage2', '/level2/sqlpage3'];
+  const noNavbarRoutes = ['/quizHome', '/level2', '/level2/sqlpage2', '/level2/sqlpage3','/level2/sqlpage4'];
   return noNavbarRoutes.includes(location.pathname);
 }, [location.pathname]);
 
@@ -63,6 +64,7 @@ const hideNavbar = useMemo(() => {
         <Route path="/level2" element={authUser ? <Sqlpage1 /> : <Navigate to="/login" />} />
         <Route path="/level2/sqlpage2" element={authUser ? <Sqlpage2 /> : <Navigate to="/login" />} />
         <Route path="/level2/sqlpage3" element={authUser ? <Sqlpage3 /> : <Navigate to="/login" />} />
+        <Route path="/level2/sqlpage4" element={authUser ? <Sqlpage4 /> : <Navigate to="/login" />} />
 
 
         <Route path="/posts" element={authUser ? <PostPage /> : <Navigate to="/login" />} />
