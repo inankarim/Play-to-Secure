@@ -110,7 +110,7 @@ const Dashboard = () => {
 
   // ---- Gates (now using badgeCount) ----
   const canEnterChat = badgeCount > 1;   // need 2+ badges
-  const canEnterPosts = badgeCount >= 3; // need 3+ badges
+  const canEnterPosts = badgeCount >= 0; // need 3+ badges
 
   const handleChatClick = (e) => {
     if (!canEnterChat) {

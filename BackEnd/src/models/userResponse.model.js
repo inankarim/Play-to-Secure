@@ -2,26 +2,24 @@ import mongoose from "mongoose";
 
 const userResponseSchema = new mongoose.Schema(
   {
-    // User who answered the question
+    // User who answered
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true
     },
     
-    // Question that was answered
-    questionId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'SqlQuiz',
-      required: true
-    },
-    
-    // User's selected answer
-    selectedAnswer: {
+    // Unique identifier for the page/challenge (not a database ID)
+    pageIdentifier: {
       type: String,
       required: true,
-      enum: ['A', 'B', 'C', 'D'],
-      uppercase: true
+      trim: true
+    },
+    
+    // User's submitted answers
+    shortAnswers: {
+      type: [String],
+      default: []
     },
     
     // Whether the answer was correct
@@ -30,7 +28,7 @@ const userResponseSchema = new mongoose.Schema(
       required: true
     },
     
-    // Points earned for this answer
+    // Points earned
     pointsEarned: {
       type: Number,
       required: true,
@@ -44,14 +42,14 @@ const userResponseSchema = new mongoose.Schema(
       min: 0
     },
     
-    // Category of the question (for easier querying)
+    // Category
     category: {
       type: String,
       required: true,
       trim: true
     },
     
-    // Level of the question (for easier querying)
+    // Level
     level: {
       type: Number,
       required: true,
@@ -59,31 +57,41 @@ const userResponseSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true, // Adds createdAt and updatedAt automatically
-    collection: 'userresponses' // Explicit collection name
+    timestamps: true,
+    collection: 'userresponses'
   }
 );
 
-// Indexes for better query performance
-userResponseSchema.index({ userId: 1, questionId: 1 }, { unique: true }); // Prevent duplicate answers
+// Unique index: one user can only answer each page once
+userResponseSchema.index({ userId: 1, pageIdentifier: 1 }, { unique: true });
 userResponseSchema.index({ userId: 1, category: 1 });
 userResponseSchema.index({ userId: 1, level: 1 });
 userResponseSchema.index({ userId: 1, createdAt: -1 });
 
-// Static method to get user progress by category
+// Static method to check if user has completed a page
+userResponseSchema.statics.hasUserCompleted = function(userId, pageIdentifier) {
+  return this.findOne({ userId, pageIdentifier });
+};
+
+// Static method to get user's all completed pages
+userResponseSchema.statics.getUserCompletedPages = function(userId, category = null) {
+  const filter = { userId };
+  if (category) filter.category = category;
+  
+  return this.find(filter).sort({ createdAt: -1 });
+};
+
+// Static method to get user progress
 userResponseSchema.statics.getUserProgress = function(userId, category = null) {
-  const matchQuery = { userId: userId };
+  const matchQuery = { userId };
   if (category) matchQuery.category = category;
   
   return this.aggregate([
     { $match: matchQuery },
     {
       $group: {
-        _id: {
-          category: "$category",
-          level: "$level"
-        },
-        totalQuestions: { $sum: 1 },
+        _id: "$category",
+        totalCompleted: { $sum: 1 },
         correctAnswers: { $sum: { $cond: ["$isCorrect", 1, 0] } },
         totalPoints: { $sum: "$pointsEarned" },
         averageTime: { $avg: "$timeTaken" },
@@ -95,50 +103,8 @@ userResponseSchema.statics.getUserProgress = function(userId, category = null) {
         }
       }
     },
-    {
-      $group: {
-        _id: "$_id.category",
-        levels: {
-          $push: {
-            level: "$_id.level",
-            totalQuestions: "$totalQuestions",
-            correctAnswers: "$correctAnswers",
-            totalPoints: "$totalPoints",
-            averageTime: "$averageTime",
-            accuracy: "$accuracy"
-          }
-        },
-        overallQuestions: { $sum: "$totalQuestions" },
-        overallCorrect: { $sum: "$correctAnswers" },
-        overallPoints: { $sum: "$totalPoints" },
-        overallAccuracy: {
-          $multiply: [
-            { $divide: ["$overallCorrect", "$overallQuestions"] },
-            100
-          ]
-        }
-      }
-    },
     { $sort: { _id: 1 } }
   ]);
-};
-
-// Static method to check if user has already answered a question
-userResponseSchema.statics.hasUserAnswered = function(userId, questionId) {
-  return this.findOne({ userId: userId, questionId: questionId });
-};
-
-// Static method to get user's recent activity
-userResponseSchema.statics.getUserRecentActivity = function(userId, limit = 10) {
-  return this.find({ userId: userId })
-    .populate('questionId', 'question category level difficulty points')
-    .sort({ createdAt: -1 })
-    .limit(limit);
-};
-
-// Instance method to calculate accuracy percentage
-userResponseSchema.methods.getAccuracyPercentage = function() {
-  return this.isCorrect ? 100 : 0;
 };
 
 const UserResponse = mongoose.model("UserResponse", userResponseSchema);

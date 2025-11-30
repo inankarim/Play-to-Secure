@@ -51,20 +51,24 @@ const useQuizService = {
       throw error;
     }
   },
-  // In useQuizService.js
- getAnsweredTrail: async(category, difficulty, level, limit = 50)=> {
-  const { data } = await axiosInstance.get("/quiz/flow/answered-trail", {
-    params: { category, difficulty, level, limit }
-  });
-  return data.data?.trail || [];
-},
 
-getAnsweredPrev: async(category, difficulty, level, order)=> {
-  const { data } = await axiosInstance.get("/quiz/flow/answered-prev", {
-    params: { category, difficulty, level, order }
-  });
-  return data.data || null;
-},
+  // Get answered trail
+  getAnsweredTrail: async(category, difficulty, level, limit = 50)=> {
+    const { data } = await axiosInstance.get("/quiz/flow/answered-trail", {
+      params: { category, difficulty, level, limit }
+    });
+    return data.data?.trail || [];
+  },
+
+  // Get answered previous
+  getAnsweredPrev: async(category, difficulty, level, order)=> {
+    const { data } = await axiosInstance.get("/quiz/flow/answered-prev", {
+      params: { category, difficulty, level, order }
+    });
+    return data.data || null;
+  },
+
+  // Get answer reflection
   getAnswerReflection: async (questionId, userAnswer, isCorrect) => {
     try {
       const response = await axiosInstance.post(`/quiz/flow/reflection`, {
@@ -78,6 +82,8 @@ getAnsweredPrev: async(category, difficulty, level, order)=> {
       throw error;
     }
   },
+
+  // Send message to AI
   sendMessageToAI: async (message) => {
     try {
       // The payload needs to be structured for the Gemini API
@@ -91,20 +97,16 @@ getAnsweredPrev: async(category, difficulty, level, order)=> {
             ],
           },
         ],
-        
-
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 150,
         },
       };
-      {
-  }
 
       const response = await aiAxiosInstance.post('', payload);
 
       // Access the response text according to the Gemini API structure
-      return response.data.candidates[0].content.parts[0].text || "Sorry, I couldn’t understand that.";
+      return response.data.candidates[0].content.parts[0].text || "Sorry, I couldn't understand that.";
     } catch (error) {
       console.error("Error with AI message:", error);
       // Provide more specific error feedback if possible
@@ -112,6 +114,8 @@ getAnsweredPrev: async(category, difficulty, level, order)=> {
       return errorMessage;
     }
   },
+
+  // Get last answered question
   getLastAnsweredQuestion: async (category, difficulty = "Easy", level = 1) => {
     try {
       const response = await axiosInstance.get(
@@ -129,7 +133,9 @@ getAnsweredPrev: async(category, difficulty, level, order)=> {
       throw error;
     }
   },
-   getAnswerHistory: async (category, difficulty = "Easy", level = 1) => {
+
+  // Get answer history
+  getAnswerHistory: async (category, difficulty = "Easy", level = 1) => {
     try {
       const response = await axiosInstance.get(`/quiz/flow/progress/history?category=${category}&difficulty=${difficulty}&level=${level}`);
       return response.data.data; // Returns an array of answered questions
@@ -139,15 +145,93 @@ getAnsweredPrev: async(category, difficulty, level, order)=> {
     }
   },
   
-getCategoryStatus: async (category) => {
-  const { data } = await axiosInstance.get("/quiz/flow/status", {
-    params: { category }
-  });
-  return data?.data; // { category, segments: [{difficulty, level, total, answered, completed, nextOrder}, ...] }
-},
+  // Get category status
+  getCategoryStatus: async (category) => {
+    const { data } = await axiosInstance.get("/quiz/flow/status", {
+      params: { category }
+    });
+    return data?.data; // { category, segments: [{difficulty, level, total, answered, completed, nextOrder}, ...] }
+  },
 
+  // ==================== SHORT QUESTIONS METHODS ====================
+
+  // Submit short answer for a page
+  submitShortAnswer: async (pageIdentifier, shortAnswers, isCorrect, pointsEarned, category, level, timeTaken = null) => {
+    try {
+      const response = await axiosInstance.post('/short-questions/submit', {
+        pageIdentifier,
+        shortAnswers,
+        isCorrect,
+        pointsEarned,
+        category,
+        level,
+        timeTaken
+      });
+      return response.data; // Return the full response
+    } catch (error) {
+      console.error('Error submitting short answer:', error);
+      throw error;
+    }
+  },
+
+  // Check if user has completed a specific page
+  checkPageCompletion: async (pageIdentifier) => {
+    try {
+      const response = await axiosInstance.get(`/short-questions/check/${pageIdentifier}`);
+      return response.data; // Returns { success: true, completed: boolean, data: {...} }
+    } catch (error) {
+      console.error('Error checking page completion:', error);
+      throw error;
+    }
+  },
+
+  // Get all completed short answer pages
+  getCompletedPages: async (category = null) => {
+    try {
+      const params = category ? { category } : {};
+      const response = await axiosInstance.get('/short-questions/completed', { params });
+      return response.data; // Returns { success: true, count: number, stats: {...}, data: [...] }
+    } catch (error) {
+      console.error('Error fetching completed pages:', error);
+      throw error;
+    }
+  },
+
+  // Get user progress for short answers
+  getShortAnswerProgress: async (category = null) => {
+    try {
+      const params = category ? { category } : {};
+      const response = await axiosInstance.get('/short-questions/progress', { params });
+      return response.data; // Returns progress data
+    } catch (error) {
+      console.error('Error fetching short answer progress:', error);
+      throw error;
+    }
+  },
+
+  // Get user statistics for short answers
+  getShortAnswerStats: async () => {
+    try {
+      const response = await axiosInstance.get('/short-questions/stats');
+      return response.data; // Returns overall stats, by category, by level
+    } catch (error) {
+      console.error('Error fetching short answer stats:', error);
+      throw error;
+    }
+  },
+
+  // Get all completed page identifiers (array of strings)
+  getCompletedPageIdentifiers: async () => {
+    try {
+      const response = await axiosInstance.get('/short-questions/completed');
+      // Extract just the pageIdentifier from each completed page
+      const pageIdentifiers = response.data.data.map(page => page.pageIdentifier);
+      return pageIdentifiers; // Returns array like ["sql-page1-stone-door-auth", "sql-page2-...", ...]
+    } catch (error) {
+      console.error('Error fetching completed page identifiers:', error);
+      return []; // Return empty array on error
+    }
+  },
 };
-  
-
 
 export default useQuizService;
