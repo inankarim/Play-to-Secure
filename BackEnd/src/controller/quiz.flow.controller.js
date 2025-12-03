@@ -80,33 +80,135 @@ async function awardSegmentBadge({ userId, category, difficulty, level }) {
 // POST /api/quiz/submit
 // Body: { questionId, selectedAnswer, timeTaken? }
 // POST /api/quiz/submit
+// export const submitAnswer = async (req, res) => {
+//   try {
+//     const userId = resolveUserId(req);
+//     const { questionId, selectedAnswer, timeTaken } = req.body;
+
+//     if (!userId) return res.status(401).json({ success: false, message: "Unauthorized: userId missing" });
+//     if (!mongoose.Types.ObjectId.isValid(questionId)) {
+//       return res.status(400).json({ success: false, message: "Invalid questionId" });
+//     }
+//     if (!selectedAnswer) return res.status(400).json({ success: false, message: "selectedAnswer is required" });
+
+//     const q = await SqlQuiz.findById(questionId);
+//     if (!q || !q.isActive) {
+//       return res.status(404).json({ success: false, message: "Question not found or inactive" });
+//     }
+
+//     // Grade
+//     const isCorrect = String(selectedAnswer).toUpperCase() === q.correctAnswer;
+//     let pointsEarned = isCorrect ? (q.points || 0) : 0;
+
+//     // Optional: enforce timeLimit (reject or reduce points)
+//     if (q.timeLimit && Number(timeTaken) > q.timeLimit) {
+//       // Example policy: half points if late but correct
+//       pointsEarned = isCorrect ? Math.floor((q.points || 0) / 2) : 0;
+//     }
+
+//     // Persist response
+//     await UserResponse.create({
+//       userId,
+//       questionId,
+//       selectedAnswer: String(selectedAnswer).toUpperCase(),
+//       isCorrect,
+//       pointsEarned,
+//       timeTaken: typeof timeTaken === "number" ? timeTaken : null,
+//       category: q.category,
+//       level: q.level,
+//     });
+
+//     // Update user totals & experience
+//     const user = await User.findById(userId);
+//     if (user) {
+//       await user.addPoints(pointsEarned);
+//       await user.updateExperienceLevel();
+//     }
+
+//     // Check segment completion
+//     const segmentCompleted = await isSegmentComplete({
+//       userId,
+//       category: q.category,
+//       difficulty: q.difficulty,
+//       level: q.level,
+//     });
+
+//     let badgeAwarded = null;
+//     if (segmentCompleted) {
+//       badgeAwarded = await awardSegmentBadge({
+//         userId,
+//         category: q.category,
+//         difficulty: q.difficulty,
+//         level: q.level,
+//       });
+//     }
+
+//     // Preload next question in the same segment for smooth UX
+//     const next = await getNextUnansweredInSegment({
+//       userId,
+//       category: q.category,
+//       difficulty: q.difficulty,
+//       level: q.level,
+//     });
+
+//     return res.json({
+//       success: true,
+//       data: {
+//         isCorrect,
+//         pointsEarned,
+//         segmentCompleted,
+//         badgeAwarded,
+//         next,
+//         correctAnswer: q.correctAnswer // Ensure correct answer is part of the response
+//       },
+//     });
+//   } catch (e) {
+//     console.error("submitAnswer error:", e);
+//     return res.status(500).json({ success: false, message: "Error submitting answer", error: e.message });
+//   }
+// };
+// POST /api/quiz/flow/submit
 export const submitAnswer = async (req, res) => {
   try {
+    console.log("=== SUBMIT ANSWER START ===");
     const userId = resolveUserId(req);
     const { questionId, selectedAnswer, timeTaken } = req.body;
 
-    if (!userId) return res.status(401).json({ success: false, message: "Unauthorized: userId missing" });
+    console.log("1. Resolved userId:", userId);
+    console.log("2. Request body:", { questionId, selectedAnswer, timeTaken });
+
+    if (!userId) {
+      return res.status(401).json({ success: false, message: "Unauthorized: userId missing" });
+    }
+    
     if (!mongoose.Types.ObjectId.isValid(questionId)) {
       return res.status(400).json({ success: false, message: "Invalid questionId" });
     }
-    if (!selectedAnswer) return res.status(400).json({ success: false, message: "selectedAnswer is required" });
+    
+    if (!selectedAnswer) {
+      return res.status(400).json({ success: false, message: "selectedAnswer is required" });
+    }
 
+    console.log("3. Finding question...");
     const q = await SqlQuiz.findById(questionId);
     if (!q || !q.isActive) {
       return res.status(404).json({ success: false, message: "Question not found or inactive" });
     }
+    console.log("4. Question found:", q.question);
 
     // Grade
     const isCorrect = String(selectedAnswer).toUpperCase() === q.correctAnswer;
     let pointsEarned = isCorrect ? (q.points || 0) : 0;
+    console.log("5. Graded:", { isCorrect, pointsEarned, correctAnswer: q.correctAnswer });
 
-    // Optional: enforce timeLimit (reject or reduce points)
+    // Optional: enforce timeLimit
     if (q.timeLimit && Number(timeTaken) > q.timeLimit) {
-      // Example policy: half points if late but correct
       pointsEarned = isCorrect ? Math.floor((q.points || 0) / 2) : 0;
+      console.log("6. Time limit exceeded, points adjusted:", pointsEarned);
     }
 
     // Persist response
+    console.log("7. Creating UserResponse...");
     await UserResponse.create({
       userId,
       questionId,
@@ -117,54 +219,172 @@ export const submitAnswer = async (req, res) => {
       category: q.category,
       level: q.level,
     });
+    console.log("8. UserResponse created successfully");
 
     // Update user totals & experience
-    const user = await User.findById(userId);
-    if (user) {
-      await user.addPoints(pointsEarned);
-      await user.updateExperienceLevel();
+    console.log("9. Updating user points...");
+    try {
+      const user = await User.findById(userId);
+      if (user) {
+        console.log("10. User found, adding points...");
+        await user.addPoints(pointsEarned);
+        console.log("11. Points added, updating experience...");
+        await user.updateExperienceLevel();
+        console.log("12. Experience updated");
+      } else {
+        console.log("10. User not found");
+      }
+    } catch (userError) {
+      console.error("ERROR updating user:", userError);
+      console.error("User error stack:", userError.stack);
+      // Continue anyway - response is saved
     }
 
     // Check segment completion
-    const segmentCompleted = await isSegmentComplete({
-      userId,
-      category: q.category,
-      difficulty: q.difficulty,
-      level: q.level,
-    });
-
-    let badgeAwarded = null;
-    if (segmentCompleted) {
-      badgeAwarded = await awardSegmentBadge({
+    console.log("13. Checking segment completion...");
+    let segmentCompleted = false;
+    try {
+      segmentCompleted = await isSegmentComplete({
         userId,
         category: q.category,
         difficulty: q.difficulty,
         level: q.level,
       });
+      console.log("14. Segment completed:", segmentCompleted);
+    } catch (segmentError) {
+      console.error("ERROR checking segment completion:", segmentError);
     }
 
-    // Preload next question in the same segment for smooth UX
-    const next = await getNextUnansweredInSegment({
-      userId,
-      category: q.category,
-      difficulty: q.difficulty,
-      level: q.level,
-    });
+    let badgeAwarded = null;
+    if (segmentCompleted) {
+      console.log("15. Awarding badge...");
+      try {
+        badgeAwarded = await awardSegmentBadge({
+          userId,
+          category: q.category,
+          difficulty: q.difficulty,
+          level: q.level,
+        });
+        console.log("16. Badge awarded:", badgeAwarded);
+      } catch (badgeError) {
+        console.error("ERROR awarding badge:", badgeError);
+      }
+    }
 
+    // Preload next question
+    console.log("17. Getting next question...");
+    let next = null;
+    try {
+      next = await getNextUnansweredInSegment({
+        userId,
+        category: q.category,
+        difficulty: q.difficulty,
+        level: q.level,
+      });
+      console.log("18. Next question retrieved");
+    } catch (nextError) {
+      console.error("ERROR getting next question:", nextError);
+    }
+
+    console.log("19. Sending response...");
     return res.json({
       success: true,
       data: {
         isCorrect,
         pointsEarned,
+        correctAnswer: q.correctAnswer, // IMPORTANT!
         segmentCompleted,
         badgeAwarded,
         next,
-        correctAnswer: q.correctAnswer // Ensure correct answer is part of the response
       },
     });
   } catch (e) {
-    console.error("submitAnswer error:", e);
-    return res.status(500).json({ success: false, message: "Error submitting answer", error: e.message });
+    console.error("=== SUBMIT ANSWER ERROR ===");
+    console.error("Error message:", e.message);
+    console.error("Error stack:", e.stack);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Error submitting answer", 
+      error: e.message 
+    });
   }
 };
+// Add this function to quiz.flow.controller.js
 
+// GET /api/quiz/flow/question-by-order?category=...&difficulty=Medium&level=2&order=2
+export const getQuestionByOrder = async (req, res) => {
+  try {
+    const { category, difficulty, level, order } = req.query;
+
+    // Validate required parameters
+    if (!category) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "category is required" 
+      });
+    }
+    if (!difficulty) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "difficulty is required" 
+      });
+    }
+    if (!level) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "level is required" 
+      });
+    }
+    if (!order) {
+      return res.status(400).json({ 
+        success: false, 
+        message: "order is required" 
+      });
+    }
+
+    // Find the question
+    const question = await SqlQuiz.findOne({
+      category: String(category).trim(),
+      difficulty,
+      level: Number(level),
+      order: Number(order),
+      isActive: true
+    });
+
+    if (!question) {
+      return res.status(404).json({ 
+        success: false, 
+        message: `Question not found for category: ${category}, difficulty: ${difficulty}, level: ${level}, order: ${order}` 
+      });
+    }
+
+    // Return question without correctAnswer and explanation (user hasn't answered yet)
+    const questionData = {
+      _id: question._id,
+      question: question.question,
+      scenario: question.scenario,
+      options: question.options,
+      points: question.points,
+      level: question.level,
+      category: question.category,
+      difficulty: question.difficulty,
+      timeLimit: question.timeLimit,
+      order: question.order,
+      tags: question.tags
+    };
+
+    return res.json({
+      success: true,
+      data: {
+        question: questionData
+      }
+    });
+  } catch (e) {
+    console.error("getQuestionByOrder error:", e);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Error fetching question by order", 
+      error: e.message 
+    });
+  }
+};

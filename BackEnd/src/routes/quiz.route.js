@@ -2,7 +2,7 @@
 import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js"; // add when ready
 
-import { getNextQuestion, submitAnswer } from "../controller/quiz.flow.controller.js";
+import { getNextQuestion, submitAnswer, getQuestionByOrder } from "../controller/quiz.flow.controller.js";
 import { getCategories, getLevelsByCategory, getCategoryStatus, getProgressSummary, getTotalOrder,getAnsweredTrail,getAnsweredPrev,getLastAnswered,getAnsweredHistory } from "../controller/quiz.progress.controller.js";
 
 import { getAnswerReflection } from "../controller/quiz.reflection.controller.js";
@@ -11,6 +11,7 @@ const router = express.Router();
 
 // Flow
 router.get("/next", protectRoute, getNextQuestion);
+router.get("/question-by-order", protectRoute, getQuestionByOrder); //
 router.post("/submit", protectRoute, submitAnswer);
 
 // Progress & gating

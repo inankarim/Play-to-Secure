@@ -17,13 +17,10 @@ import AdminQuizPage from "./pages/AdminQuizPage";
 import PostPage from "./pages/PostPage";
 import QuizHomePage from "./pages/QuizHomePage";
 import QuizPage from "./pages/QuizPage";
+import Level2Routes from "./Level2Routes";
 
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
-import Sqlpage1 from "./level2/SQLPAGE/sqlpage1";
-import Sqlpage2 from "./level2/SQLPAGE/Sqlpage2";
-import Sqlpage3 from "./level2/SQLPAGE/Sqlpage3";
-import Sqlpage4 from "./level2/SQLPAGE/Sqlpage4";
 
 const App = () => {
   const location = useLocation();
@@ -34,11 +31,10 @@ const App = () => {
     checkAuth();
   }, [checkAuth]);
 
-  // Hide navbar ONLY on /quizHome
-const hideNavbar = useMemo(() => {
-  const noNavbarRoutes = ['/quizHome', '/level2', '/level2/sqlpage2', '/level2/sqlpage3','/level2/sqlpage4'];
-  return noNavbarRoutes.includes(location.pathname);
-}, [location.pathname]);
+  // Hide navbar on /quizHome and all /level2 routes
+  const hideNavbar = useMemo(() => {
+    return location.pathname === '/quizHome' || location.pathname.startsWith('/level2');
+  }, [location.pathname]);
 
   if (isCheckingAuth && !authUser) {
     return (
@@ -61,17 +57,15 @@ const hideNavbar = useMemo(() => {
         <Route path="/settings" element={authUser ? <SettingsPage /> : <Navigate to="/login" />} />
         <Route path="/profile" element={authUser ? <ProfilePage /> : <Navigate to="/login" />} />
         <Route path="/leaderboard" element={authUser ? <Leaderboard /> : <Navigate to="/login" />} />
-        <Route path="/level2" element={authUser ? <Sqlpage1 /> : <Navigate to="/login" />} />
-        <Route path="/level2/sqlpage2" element={authUser ? <Sqlpage2 /> : <Navigate to="/login" />} />
-        <Route path="/level2/sqlpage3" element={authUser ? <Sqlpage3 /> : <Navigate to="/login" />} />
-        <Route path="/level2/sqlpage4" element={authUser ? <Sqlpage4 /> : <Navigate to="/login" />} />
-
+        
+        {/* Level 2 Routes (No Navbar) */}
+        <Route path="/level2/*" element={<Level2Routes />} />
 
         <Route path="/posts" element={authUser ? <PostPage /> : <Navigate to="/login" />} />
         <Route path="/quizHome" element={authUser ? <QuizHomePage /> : <Navigate to="/login" />} />
         <Route path="/quiz/:category/:difficulty/:level" element={authUser ? <QuizPage /> : <Navigate to="/login" />} />
         
-        {/* Admin Routes (Navbar WILL show) */}
+        {/* Admin Routes */}
         <Route path="/admin" element={<AdminLoginPage />} />
         <Route path="/admin/quiz" element={<AdminQuizPage />} />
 
