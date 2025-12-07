@@ -24,7 +24,18 @@ const useQuizService = {
       throw error;
     }
   },
-
+// Get question by specific order (for IDOR and other specific quiz flows)
+  getQuestionByOrder: async (category, difficulty, level, order) => {
+    try {
+      const response = await axiosInstance.get(
+        `/quiz/flow/question-by-order?category=${encodeURIComponent(category)}&difficulty=${encodeURIComponent(difficulty)}&level=${level}&order=${order}`
+      );
+      return response.data.data.question; // Return the question
+    } catch (error) {
+      console.error('Error fetching question by order:', error);
+      throw error;
+    }
+  },
   // Submit the user's answer to the server
   submitAnswer: async (questionId, selectedAnswer) => {
     try {
