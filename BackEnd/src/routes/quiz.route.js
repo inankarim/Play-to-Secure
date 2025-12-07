@@ -13,6 +13,7 @@ const router = express.Router();
 router.get("/next", protectRoute, getNextQuestion);
 router.get("/question-by-order", protectRoute, getQuestionByOrder); //
 router.post("/submit", protectRoute, submitAnswer);
+router.get("/question-by-order", protectRoute, getQuestionByOrder);
 
 // Progress & gating
 router.get("/categories", protectRoute, getCategories);
