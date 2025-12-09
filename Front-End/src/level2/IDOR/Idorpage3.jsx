@@ -52,8 +52,8 @@ const Idorpage3 = () => {
     }, []);
 
     // Calculate progress percentage based on completed items (quizzes finished)
-    const progress = (completedItems.length / 5) * 100;
-    const allQuestsComplete = completedItems.length === 5;
+    const progress = (completedItems.length / 4) * 100;
+    const allQuestsComplete = completedItems.length === 4;
 
     const handleBeginSearch = () => {
         navigate('/level2/idorpage4');
@@ -152,7 +152,7 @@ const Idorpage3 = () => {
                             </motion.div>
                         </div>
                         <p className="text-xs text-gray-300 mt-1">
-                            {completedItems.length} of 5 quests completed
+                            {completedItems.length} of 4 quests completed
                         </p>
                         
                         {/* Debug info - remove in production */}
