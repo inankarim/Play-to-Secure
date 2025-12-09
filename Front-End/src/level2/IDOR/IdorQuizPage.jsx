@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import quizService from "../../store/useQuizService";
+import { markItemComplete } from "../../lib/idoritemProgress";
 import { motion, AnimatePresence } from "framer-motion";
 
 const IdorQuizPage = () => {
@@ -11,16 +12,18 @@ const IdorQuizPage = () => {
   // Get the page user came from to determine question order
   const { fromPage } = location.state || {};
 
-  // Map fromPage to question order
+  // Map fromPage to question order and item name
   const pageOrderMap = {
-    'idorpage5': 1,
-    'idorpage6': 2,
-    'idorpage7': 3,
-    'idorpage8': 4,
-    'idorpage9': 5,
+    'idorpage5': { order: 1, itemName: 'crown' },
+    'idorpage6': { order: 2, itemName: 'scroll' },
+    'idorpage7': { order: 3, itemName: 'key' },
+    'idorpage8': { order: 4, itemName: 'diamond' },
+    'idorpage9': { order: 5, itemName: 'shield' },
   };
 
-  const ORDER = pageOrderMap[fromPage] || 1;
+  const pageConfig = pageOrderMap[fromPage] || { order: 1, itemName: 'crown' };
+  const ORDER = pageConfig.order;
+  const ITEM_NAME = pageConfig.itemName;
   
   // Fixed IDOR Level 2 Medium quiz parameters
   const CATEGORY = "idor";
@@ -103,6 +106,15 @@ const IdorQuizPage = () => {
       setIsCorrect(result.isCorrect);
       setCorrectAnswer(result.correctAnswer);
 
+      // Mark item as completed in IDOR progress (regardless of correct/incorrect)
+      try {
+        await markItemComplete(ITEM_NAME);
+        console.log(`Item ${ITEM_NAME} marked as completed`);
+      } catch (error) {
+        console.error("Failed to mark item as completed:", error);
+        // Continue even if this fails
+      }
+
       // Fetch AI reflection
       const reflectionData = await quizService.getAnswerReflection(
         question._id,
@@ -123,7 +135,7 @@ const IdorQuizPage = () => {
 
   const handleBackToJourney = () => {
     // Go back to IDOR hub
-    navigate('/level2/idorpage4');
+    navigate('/level2/idorpage3');
   };
 
   if (loading) {
@@ -146,7 +158,7 @@ const IdorQuizPage = () => {
             Loading Ancient Scroll...
           </p>
           <p className="text-sm mt-2" style={{ color: '#78350f' }}>
-            Order: {ORDER} | From: {fromPage || 'unknown'}
+            Order: {ORDER} | Item: {ITEM_NAME} | From: {fromPage || 'unknown'}
           </p>
         </motion.div>
       </div>
@@ -172,6 +184,7 @@ const IdorQuizPage = () => {
               <li>• Level: <strong>{LEVEL}</strong></li>
               <li>• Difficulty: <strong>{DIFFICULTY}</strong></li>
               <li>• Order: <strong>{ORDER}</strong></li>
+              <li>• Item: <strong>{ITEM_NAME}</strong></li>
               <li>• From Page: <strong>{fromPage || 'Not specified'}</strong></li>
             </ul>
             {error && (

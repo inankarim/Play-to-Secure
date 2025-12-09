@@ -12,7 +12,7 @@ const Idorpage7 = () => {
    const videoRef = useRef(null);
 
    useEffect(() => {
-       // Start music when component mounts
+      
        if (audioRef.current) {
            audioRef.current.currentTime = 0;
            audioRef.current.play().catch(error => {
@@ -20,7 +20,7 @@ const Idorpage7 = () => {
                setIsMusicPlaying(false);
            });
 
-           // Stop music at 35 seconds
+           
            const stopTimer = setTimeout(() => {
                if (audioRef.current) {
                    audioRef.current.pause();

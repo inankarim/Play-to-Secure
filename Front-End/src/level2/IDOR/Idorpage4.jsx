@@ -1,36 +1,110 @@
-import React, { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
-import bg from '../../assets/idorfrontdiv/bg-img2.png'
-import crown from '../../assets/idorfrontdiv/animation/crownframe1.png'
-import sheild from '../../assets/idorfrontdiv/animation/shieldframe.png'
-import diamond from '../../assets/idorfrontdiv/animation/diamondframe.png'
-import key from '../../assets/idorfrontdiv/animation/keyframe.png'
-import scroll from '../../assets/idorfrontdiv/animation/scrollframe.png'
-import glow from '../../assets/idorfrontdiv/animation/glowframeovercrown.png'
-import music from '../../assets/jungle-night-pad-381096.mp3'
+import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import bg from '../../assets/idorfrontdiv/bg-img2.png';
+import crown from '../../assets/idorfrontdiv/animation/crownframe1.png';
+import diamond from '../../assets/idorfrontdiv/animation/shieldframe.png';
+import sheild from '../../assets/idorfrontdiv/animation/diamondframe.png';
+import key from '../../assets/idorfrontdiv/animation/keyframe.png';
+import scroll from '../../assets/idorfrontdiv/animation/scrollframe.png';
+import glow from '../../assets/idorfrontdiv/animation/glowframeovercrown.png';
+import music from '../../assets/jungle-night-pad-381096.mp3';
+import { getIdorProgress, markItemFound } from '../../lib/idoritemProgress';
 
 const Idorpage4 = () => {
     const [hoveredItem, setHoveredItem] = useState(null);
     const navigate = useNavigate();
 
-    // Load found items
-    const foundItems = JSON.parse(localStorage.getItem("idor_items_found")) || [];
+    // Load both found items AND completed items from backend
+    const [foundItems, setFoundItems] = useState([]);
+    const [completedItems, setCompletedItems] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Function to save item when clicked
-    const markItemFound = (itemName) => {
-        const found = JSON.parse(localStorage.getItem("idor_items_found")) || [];
-        if (!found.includes(itemName)) {
-            found.push(itemName);
-            localStorage.setItem("idor_items_found", JSON.stringify(found));
+    // Fetch progress on mount
+    useEffect(() => {
+        const fetchProgress = async () => {
+            try {
+                setLoading(true);
+                const response = await getIdorProgress();
+                console.log('Idorpage4 - Fetched progress:', response);
+                
+                if (response.success) {
+                    setFoundItems(response.data.foundItems || []);
+                    setCompletedItems(response.data.completedItems || []);
+                }
+            } catch (error) {
+                console.error('Failed to fetch progress:', error);
+                setFoundItems([]);
+                setCompletedItems([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProgress();
+    }, []);
+
+    // Refresh progress when window gains focus
+    useEffect(() => {
+        const handleFocus = async () => {
+            console.log('Window focused, refreshing item progress...');
+            try {
+                const response = await getIdorProgress();
+                if (response.success) {
+                    setFoundItems(response.data.foundItems || []);
+                    setCompletedItems(response.data.completedItems || []);
+                    console.log('Progress refreshed:', response.data);
+                }
+            } catch (error) {
+                console.error('Failed to refresh progress:', error);
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, []);
+
+    // Function to save item when clicked - now saves to backend
+    const handleItemClick = async (itemName, navigateTo) => {
+        try {
+            // Mark item as found in backend
+            const response = await markItemFound(itemName);
+            if (response.success) {
+                // Update local state with new found items
+                setFoundItems(response.data.foundItems || []);
+                setCompletedItems(response.data.completedItems || []);
+            }
+        } catch (error) {
+            console.error('Failed to mark item as found:', error);
+            // Still update local state as fallback
+            if (!foundItems.includes(itemName)) {
+                setFoundItems([...foundItems, itemName]);
+            }
+        } finally {
+            // Navigate regardless of success/failure
+            navigate(navigateTo);
         }
     };
     
-    useEffect(() => {
-        const audio = new Audio(music);
-        audio.volume = 0.1;
-        audio.play().catch(() => {});
-    }, []);
+   useEffect(() => {
+    const audio = new Audio(music);
+    audio.volume = 0.1;
+    audio.play().catch(() => {});
+    
+    // ADD THIS: Cleanup function
+    return () => {
+        audio.pause();
+        audio.currentTime = 0;
+    };
+}, []);
+
+    // Helper function to check if an item should be hidden
+    // Hide if it's either found OR completed
+    const shouldHideItem = (itemName) => {
+        const isCompleted = completedItems.includes(itemName);
+        console.log(`${itemName}: completed=${isCompleted}`);
+        return isCompleted;
+    };
 
     const HiddenItem = ({ image, alt, top, left, onClick }) => (
         <motion.div
@@ -84,6 +158,28 @@ const Idorpage4 = () => {
         </motion.div>
     );
 
+    if (loading) {
+        return (
+            <div
+                style={{
+                    backgroundImage: `url(${bg})`,
+                    height: '100vh',
+                    width: '100vw',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <div className="text-white text-2xl font-bold">Loading...</div>
+            </div>
+        );
+    }
+
     return (
         <div
             style={{
@@ -97,68 +193,53 @@ const Idorpage4 = () => {
                 overflow: 'hidden'
             }}
         >
-            {!foundItems.includes("crown") && (
+            {!shouldHideItem("crown") && (
                 <HiddenItem
                     image={crown}
                     alt="crown"
                     top="40%"
                     left="14.56%"
-                    onClick={() => {
-                        markItemFound("crown");
-                        navigate('/level2/idorpage5');
-                    }}
+                    onClick={() => handleItemClick("crown", '/level2/idorpage5')}
                 />
             )}
 
-            {!foundItems.includes("shield") && (
+            {!shouldHideItem("shield") && (
                 <HiddenItem
                     image={sheild}
                     alt="shield"
                     top="20%"
                     left="6%"
-                    onClick={() => {
-                        markItemFound("shield");
-                        navigate('/level2/idorpage9');
-                    }}
+                    onClick={() => handleItemClick("shield", '/level2/idorpage9')}
                 />
             )}
 
-            {!foundItems.includes("diamond") && (
+            {!shouldHideItem("diamond") && (
                 <HiddenItem
                     image={diamond}
                     alt="diamond"
                     top="56%"
                     left="73%"
-                    onClick={() => {
-                        markItemFound("diamond");
-                        navigate('/level2/idorpage8');
-                    }}
+                    onClick={() => handleItemClick("diamond", '/level2/idorpage8')}
                 />
             )}
 
-            {!foundItems.includes("key") && (
+            {!shouldHideItem("key") && (
                 <HiddenItem
                     image={key}
                     alt="key"
                     top="87%"
                     left="92%"
-                    onClick={() => {
-                        markItemFound("key");
-                        navigate('/level2/idorpage7');
-                    }}
+                    onClick={() => handleItemClick("key", '/level2/idorpage7')}
                 />
             )}
             
-            {!foundItems.includes("scroll") && (
+            {!shouldHideItem("scroll") && (
                 <HiddenItem
                     image={scroll}
                     alt="scroll"
                     top="30%"
                     left="83%"
-                    onClick={() => {
-                        markItemFound("scroll");
-                        navigate('/level2/idorpage6');
-                    }}
+                    onClick={() => handleItemClick("scroll", '/level2/idorpage6')}
                 />
             )}
         </div>

@@ -493,7 +493,7 @@
 import mongoose from "mongoose";
 import SqlQuiz from "../models/sql.model.js";
 import QuizResponse from "../models/quizResponsemodel.js"; // UPDATED: Use QuizResponse for quizzes
-import UserResponse from "../models/userResponse.model.js"; // Keep for short answer pages
+import UserResponse from "../models/shortquestion.model.js"; // Keep for short answer pages
 
 const resolveUserId = (req) => (req.user?._id || req.user?.id || req.body.userId || req.query.userId);
 

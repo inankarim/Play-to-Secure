@@ -21,7 +21,7 @@ const Level2Routes = () => {
 
   return (
     <Routes>
-      <Route path="/" element={authUser ? <Sqlpage1 /> : <Navigate to="/login" />} />
+      <Route path="/sqlpage1" element={authUser ? <Sqlpage1 /> : <Navigate to="/login" />} />
       <Route path="/sqlpage2" element={authUser ? <Sqlpage2 /> : <Navigate to="/login" />} />
       <Route path="/sqlpage3" element={authUser ? <Sqlpage3 /> : <Navigate to="/login" />} />
       <Route path="/sqlpage4" element={authUser ? <Sqlpage4 /> : <Navigate to="/login" />} />

@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-      // University information
+    // University information
     universityName: {
       type: String,
       default: "",
@@ -69,8 +69,19 @@ const userSchema = new mongoose.Schema(
     lastActive: {
       type: Date,
       default: Date.now
-    }
-
+    },
+    
+    // ========== SIMPLIFIED: Just track completed attacks ==========
+    completedAttacks: [{
+      attackName: {
+        type: String,
+        required: true
+      },
+      completedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }]
   },
   { timestamps: true }
 );
@@ -78,6 +89,7 @@ const userSchema = new mongoose.Schema(
 // Enable virtuals in JSON
 userSchema.set('toJSON', { virtuals: true });
 userSchema.set('toObject', { virtuals: true });
+
 // Virtual for badge count
 userSchema.virtual('badgeCount').get(function() {
   return this.badges.length;
@@ -91,7 +103,6 @@ userSchema.methods.addPoints = function(points) {
 
 // Method to add badge
 userSchema.methods.addBadge = function(badge) {
-  // Check if badge already exists
   const existingBadge = this.badges.find(b => b.name === badge.name);
   if (!existingBadge) {
     this.badges.push(badge);
