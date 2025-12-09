@@ -16,7 +16,8 @@ import quizRoutes from "./src/routes/quiz.route.js";
 import quoteRoutes from "./src/routes/quote.route.js"
 import shortQuestionRoutes from './src/routes/shortQuestionRoutes.js';
 import leaderboardRoutes from "./src/routes/leaderboard.route.js"
-
+import pRoutes from "./src/routes/progress.route.js"
+import itemRoutes from "./src/routes/item.route.js";
 // Socket.IO app/server (already wires up group socket events)
 import { app, server } from "./src/lib/socket.js";
 
@@ -44,6 +45,7 @@ app.use("/api/group", groupRoutes);
 
 // SQL quiz endpoints: /api/quiz/...
 app.use("/api/quiz", sqlRoutes);
+app.use("/api/item",itemRoutes)
 
 // Facebook-style social media endpoints: /api/posts/...
 app.use("/api/post", postRoutes);
@@ -57,7 +59,7 @@ app.use("/api/quotes", quoteRoutes);
 ////////// leaderboard///////
 
 app.use("/api/leaderboard", leaderboardRoutes);
-
+app.use("/api/progress",pRoutes);
 app.use("/api/quiz/flow", quizRoutes);
 // Static files (production)
 if (process.env.NODE_ENV === "production") {

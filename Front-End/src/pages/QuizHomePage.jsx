@@ -3,36 +3,32 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import bg from "../assets/z69i_kxes_211202.jpg";
 import soundFile from "../assets/jungle-sound-effect-249042.mp3";
-import quizService from "../store/useQuizService.js";
+import progressService from "../store/progressService.js";
 import RainCanvas from "../components/RainCanvas.jsx";
 import Lottie from "lottie-react";
 import monkey from "../assets/monkey.json";
 import tiger from "../assets/tiger.json";
 
-// Use this stage to gate (same as your navigation target)
-const TARGET_DIFFICULTY = "Easy";
-const TARGET_LEVEL = 1;
-
-// KEEP ORDER — unlocks in this order
-const CATEGORIES = [
-  { value: "sqli", label: "SQLi 🗄️" },
-  { value: "xss", label: "XSS 🧪" },
-  { value: "dom clobbering", label: "DOM Clobbering 🌐" },
-  { value: "cdn tampering", label: "CDN Tampering 🚧" },
-  { value: "css injection", label: "CSS Injection 🎨" },
-  { value: "nosql", label: "NoSQL 📊" },
-  { value: "clickjacking", label: "Clickjacking 🖱️" },
-  { value: "sql injection", label: "SQL Injection 💉" },
-  { value: "csp bypass", label: "CSP Bypass 🔓" },
-  { value: "idor", label: "IDOR 🔑" },
-  { value: "broken authentication", label: "Broken Authentication 🔐" },
+// Attack categories with their Level2 starting pages
+const ATTACK_CATEGORIES = [
+  { value: "sql", label: "SQL Injection 💉", startPage: "sqlpage1", finalPage: "sqlpage5" },
+  { value: "idor", label: "IDOR 🔑", startPage: "idorpage1", finalPage: "idorpage9" },
+  { value: "xss", label: "XSS 🧪", startPage: "xsspage1", finalPage: "xsspage5" },
+  { value: "dom clobbering", label: "DOM Clobbering 🌐", startPage: "dompage1", finalPage: "dompage5" },
+  { value: "cdn tampering", label: "CDN Tampering 🚧", startPage: "cdnpage1", finalPage: "cdnpage5" },
+  { value: "css injection", label: "CSS Injection 🎨", startPage: "csspage1", finalPage: "csspage5" },
+  { value: "nosql", label: "NoSQL 📊", startPage: "nosqlpage1", finalPage: "nosqlpage5" },
+  { value: "clickjacking", label: "Clickjacking 🖱️", startPage: "clickpage1", finalPage: "clickpage5" },
+  { value: "csp bypass", label: "CSP Bypass 🔓", startPage: "csppage1", finalPage: "csppage5" },
+  
+  { value: "broken authentication", label: "Broken Authentication 🔒", startPage: "authpage1", finalPage: "authpage5" },
 ];
 
 const QuizHomePage = () => {
   const navigate = useNavigate();
 
-  // DB-backed lock state: statusByCat[cat] = { available, completed }
-  const [statusByCat, setStatusByCat] = useState({});
+  // Attack completion status
+  const [completedAttacks, setCompletedAttacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [hoveredCategory, setHoveredCategory] = useState(null);
 
@@ -40,30 +36,22 @@ const QuizHomePage = () => {
   const [isPlaying, setIsPlaying] = useState(true);
   const audioRef = useRef(null);
 
-  // Fetch per-category status from backend on mount
+  // Fetch completed attacks from backend on mount
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         setLoading(true);
-        const results = await Promise.all(
-          CATEGORIES.map(c => quizService.getCategoryStatus(c.value))
-        );
+        
+        // Fetch completed attacks using simplified API
+        const response = await progressService.getCompletedAttacks();
+        
         if (cancelled) return;
 
-        const map = {};
-        results.forEach((res, idx) => {
-          const seg = res?.segments?.find(
-            s => s.difficulty === TARGET_DIFFICULTY && Number(s.level) === TARGET_LEVEL
-          );
-          const available = !!seg && (seg.total || 0) > 0;
-          const completed = !!seg?.completed;
-          map[CATEGORIES[idx].value] = { available, completed };
-        });
-        setStatusByCat(map);
+        setCompletedAttacks(response.data.completedAttacks || []);
       } catch (e) {
-        console.error("Failed to load category statuses:", e);
-        setStatusByCat({});
+        console.error("Failed to load completed attacks:", e);
+        setCompletedAttacks([]);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -79,7 +67,7 @@ const QuizHomePage = () => {
     const promise = audio.play();
     if (promise && typeof promise.then === "function") {
       promise.catch(() => {
-        // Autoplay blocked — show button as "off"
+        // Autoplay blocked – show button as "off"
         setIsPlaying(false);
       });
     }
@@ -96,21 +84,27 @@ const QuizHomePage = () => {
     setIsPlaying(!isPlaying);
   };
 
-  // Unlock ONLY the first category (by order) that has questions and is not completed
+  // Unlock ONLY the first attack (by order) that is not completed
   const unlockIndex = useMemo(() => {
-    for (let i = 0; i < CATEGORIES.length; i++) {
-      const st = statusByCat[CATEGORIES[i].value];
-      if (st?.available && !st?.completed) return i;
+    for (let i = 0; i < ATTACK_CATEGORIES.length; i++) {
+      const attackName = ATTACK_CATEGORIES[i].value.toLowerCase();
+      if (!completedAttacks.includes(attackName)) return i;
     }
-    return -1; // nothing to unlock (maybe all done)
-  }, [statusByCat]);
+    return -1; // All attacks completed!
+  }, [completedAttacks]);
 
-  // DO NOT change navigation — same route as before
-  const handleCategoryClick = (categoryValue, index) => {
-    const st = statusByCat[categoryValue];
-    const isUnlocked = index === unlockIndex && st?.available && !st?.completed && !loading;
-    if (!isUnlocked) return;
-    navigate(`/quiz/${encodeURIComponent(categoryValue)}/Easy/1`);
+  // Handle category click - navigate to Level2 attack pages
+  // ONLY unlocked attacks can be clicked, completed attacks are disabled
+  const handleCategoryClick = (category, index) => {
+    const attackName = category.value.toLowerCase();
+    const isCompleted = completedAttacks.includes(attackName);
+    const isUnlocked = index === unlockIndex && !loading;
+    
+    // Don't allow click if completed or not unlocked
+    if (isCompleted || !isUnlocked) return;
+
+    // Navigate to the attack's starting page
+    navigate(`/level2/${category.startPage}`);
   };
 
   // ----- UI helpers (your map layout) -----
@@ -244,20 +238,23 @@ const QuizHomePage = () => {
           ))}
 
           {/* Paths */}
-          {CATEGORIES.map((category, index) =>
-            index < CATEGORIES.length - 1 ? (
+          {ATTACK_CATEGORIES.map((category, index) =>
+            index < ATTACK_CATEGORIES.length - 1 ? (
               <PathLine key={`path-${index}`} from={index} to={index + 1} />
             ) : null
           )}
 
           {/* Stations */}
-          {CATEGORIES.map((category, index) => {
+          {ATTACK_CATEGORIES.map((category, index) => {
             const isHovered = hoveredCategory === category.value;
-            const st = statusByCat[category.value] || { available: false, completed: false };
+            const attackName = category.value.toLowerCase();
 
-            const isUnlocked = !loading && index === unlockIndex && st.available && !st.completed;
-            const isCompleted = st.completed;
-            const isTemple = index === CATEGORIES.length - 1;
+            const isUnlocked = !loading && index === unlockIndex;
+            const isCompleted = completedAttacks.includes(attackName);
+            const isTemple = index === ATTACK_CATEGORIES.length - 1;
+            
+            // Button is disabled if completed OR not unlocked
+            const isDisabled = isCompleted || !isUnlocked;
 
             return (
               <div
@@ -266,32 +263,32 @@ const QuizHomePage = () => {
                 className="group"
               >
                 <button
-                  onClick={() => handleCategoryClick(category.value, index)}
+                  onClick={() => handleCategoryClick(category, index)}
                   onMouseEnter={() => setHoveredCategory(category.value)}
                   onMouseLeave={() => setHoveredCategory(null)}
-                  disabled={!isUnlocked}
+                  disabled={isDisabled}
                   className={`
                     relative rounded-full font-bold transition-all duration-300 shadow-xl
                     ${isTemple ? 'w-32 h-32 text-2xl' : 'w-24 h-24 text-lg'}
-                    ${isUnlocked
+                    ${isUnlocked && !isCompleted
                       ? 'bg-gradient-to-br from-amber-600 via-yellow-500 to-orange-600 text-white border-4 border-yellow-300 hover:from-amber-500 hover:via-yellow-400 hover:to-orange-500 hover:border-yellow-200'
                       : isCompleted
                         ? 'bg-zinc-500/50 text-white/70 border-4 border-zinc-300 cursor-not-allowed grayscale'
                         : 'bg-zinc-700/50 text-white/70 border-4 border-zinc-500 cursor-not-allowed opacity-70'
                     }
-                    ${isUnlocked && isHovered ? 'shadow-2xl transform rotate-0' : ''}
-                    ${isTemple && isUnlocked ? 'border-purple-400 bg-gradient-to-br from-purple-600 via-pink-500 to-red-600 shadow-purple-500/50' : ''}
+                    ${isUnlocked && !isCompleted && isHovered ? 'shadow-2xl transform rotate-0' : ''}
+                    ${isTemple && isUnlocked && !isCompleted ? 'border-purple-400 bg-gradient-to-br from-purple-600 via-pink-500 to-red-600 shadow-purple-500/50' : ''}
                   `}
                   style={{ zIndex: 3 }}
                   title={
                     loading ? "Loading…" :
-                    isUnlocked ? "Click to start" :
-                    isCompleted ? "Completed ✅" :
-                    st.available ? "🔒 Locked — finish the previous" : "Unavailable"
+                    isCompleted ? "✅ Completed - Cannot replay" :
+                    isUnlocked ? "Click to start adventure" :
+                    "🔒 Locked – finish the previous attack"
                   }
                 >
                   <div className={`${isTemple ? 'text-4xl' : 'text-2xl'} mb-1 filter drop-shadow-lg`}>
-                    {isCompleted ? '🔒' : (isUnlocked ? (isTemple ? '🏛️' : '🗺️') : '🔒')}
+                    {isCompleted ? '🏆' : (isUnlocked ? (isTemple ? '🏛️' : '🗺️') : '🔒')}
                   </div>
 
                   {/* Completed veil */}
@@ -301,8 +298,8 @@ const QuizHomePage = () => {
                     </div>
                   )}
 
-                  {/* Jungle vines decoration (only when unlocked) */}
-                  {isUnlocked && (
+                  {/* Jungle vines decoration (only when unlocked and not completed) */}
+                  {isUnlocked && !isCompleted && (
                     <>
                       <div className="absolute -top-2 -left-2 text-green-400 text-xl opacity-70 pointer-events-none">🌿</div>
                       <div className="absolute -bottom-2 -right-2 text-green-500 text-lg opacity-60 pointer-events-none">🍃</div>
@@ -328,9 +325,9 @@ const QuizHomePage = () => {
                     <div className="font-bold text-lg">{category.label}</div>
                     <div className="text-xs mt-1">
                       {
-                        isCompleted ? "✅ Segment completed"
-                        : isUnlocked ? "🎯 Click to start adventure"
-                        : st.available ? "🔒 Locked — finish the previous" : "Unavailable"
+                        isCompleted ? "✅ Attack completed - Cannot replay"
+                        : isUnlocked ? "🎯 Click to start attack"
+                        : "🔒 Locked – finish the previous"
                       }
                     </div>
                   </div>
@@ -345,7 +342,7 @@ const QuizHomePage = () => {
               🌿 Security Quest 🌿
             </h1>
             <p className="text-center text-green-200 mt-2 text-lg font-medium">
-              Navigate the cybersecurity jungle and master each challenge!
+              Master each cybersecurity attack through story-driven challenges!
             </p>
           </div>
 

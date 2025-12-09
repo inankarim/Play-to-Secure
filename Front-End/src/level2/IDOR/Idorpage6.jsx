@@ -13,24 +13,31 @@ const Idorpage6 = () => {
    const videoRef = useRef(null);
 
    useEffect(() => {
-       // Start music when component mounts
-       if (audioRef.current) {
-           audioRef.current.currentTime = 5;
-           audioRef.current.play().catch(error => {
-               console.log("Audio autoplay prevented:", error);
-               setIsMusicPlaying(false);
-           });
+    // Start music when component mounts
+    if (audioRef.current) {
+        audioRef.current.currentTime = 5;
+        audioRef.current.play().catch(error => {
+            console.log("Audio autoplay prevented:", error);
+            setIsMusicPlaying(false);
+        });
 
-           // Stop music at 40 seconds (after 35 seconds of playing)
-           const stopTimer = setTimeout(() => {
-               if (audioRef.current) {
-                   audioRef.current.pause();
-               }
-           }, 35000);
+        // Stop music at 40 seconds (after 35 seconds of playing)
+        const stopTimer = setTimeout(() => {
+            if (audioRef.current) {
+                audioRef.current.pause();
+            }
+        }, 35000);
 
-           return () => clearTimeout(stopTimer);
-       }
-   }, []);
+        return () => {
+            clearTimeout(stopTimer);
+            // ADD THIS: Stop audio when component unmounts
+            if (audioRef.current) {
+                audioRef.current.pause();
+                audioRef.current.currentTime = 0;
+            }
+        };
+    }
+}, []);
 
    const handleVideoEnd = () => {
        setVideoEnded(true);

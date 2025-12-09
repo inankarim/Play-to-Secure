@@ -1,10 +1,11 @@
-import UserResponse from '../models/userResponse.model.js';
+import UserResponse from '../models/shortquestion.model.js';
+import User from '../models/user.model.js';
 
 // Submit answer for a page
 export const submitPageAnswer = async (req, res) => {
   try {
     const { pageIdentifier, shortAnswers, isCorrect, pointsEarned, category, level, timeTaken } = req.body;
-    const userId = req.user._id; // ✅ FIXED: Changed from req.user.id to req.user._id
+    const userId = req.user._id;
 
     // Validate required fields
     if (!pageIdentifier || !shortAnswers || typeof isCorrect !== 'boolean') {
@@ -40,6 +41,16 @@ export const submitPageAnswer = async (req, res) => {
       timeTaken: timeTaken || null
     });
 
+    // ✅ ADD POINTS TO USER'S TOTAL
+    if (pointsEarned && pointsEarned > 0) {
+      const user = await User.findById(userId);
+      if (user) {
+        await user.addPoints(pointsEarned);
+        // Optionally update experience level based on new points
+        await user.updateExperienceLevel();
+      }
+    }
+
     res.status(201).json({
       success: true,
       message: 'Answer submitted successfully',
@@ -69,7 +80,7 @@ export const submitPageAnswer = async (req, res) => {
 export const checkPageCompletion = async (req, res) => {
   try {
     const { pageIdentifier } = req.params;
-    const userId = req.user._id; // ✅ FIXED: Changed from req.user.id to req.user._id
+    const userId = req.user._id;
 
     if (!pageIdentifier) {
       return res.status(400).json({
@@ -102,7 +113,7 @@ export const checkPageCompletion = async (req, res) => {
 // Get all completed pages for a user
 export const getUserCompletedPages = async (req, res) => {
   try {
-    const userId = req.user._id; // ✅ FIXED: Changed from req.user.id to req.user._id
+    const userId = req.user._id;
     const { category } = req.query;
 
     const completedPages = await UserResponse.getUserCompletedPages(userId, category);
@@ -136,7 +147,7 @@ export const getUserCompletedPages = async (req, res) => {
 // Get user progress
 export const getUserProgress = async (req, res) => {
   try {
-    const userId = req.user._id; // ✅ FIXED: Changed from req.user.id to req.user._id
+    const userId = req.user._id;
     const { category } = req.query;
 
     const progress = await UserResponse.getUserProgress(userId, category);

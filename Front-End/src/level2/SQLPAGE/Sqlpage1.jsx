@@ -126,14 +126,24 @@ const Sqlpage1 = () => {
   const [isCompleted, setIsCompleted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [attempts, setAttempts] = useState(0);
+  const [currentPoints, setCurrentPoints] = useState(10);
 
   // Unique identifier for this page
   const PAGE_IDENTIFIER = "sql-page1-stone-door-auth";
   const CATEGORY = "SQL Basics";
   const LEVEL = 1;
-  const POINTS = 10;
+  const MAX_POINTS = 10;
+  const POINTS_DEDUCTION = 2;
+  const MAX_ATTEMPTS = 5;
 
   const words = ["You", "are", "the", "mighty", "Lion"];
+
+  // Calculate points based on attempts
+  const calculatePoints = (attemptCount) => {
+    const points = MAX_POINTS - (attemptCount * POINTS_DEDUCTION);
+    return Math.max(0, points); // Never go below 0
+  };
 
   // Check if user has already completed this page
   useEffect(() => {
@@ -154,7 +164,7 @@ const Sqlpage1 = () => {
     }
   };
 
-  const submitAnswer = async (isCorrect, userAnswer) => {
+  const submitAnswer = async (isCorrect, userAnswer, pointsToAward) => {
     try {
       setIsSubmitting(true);
 
@@ -162,19 +172,20 @@ const Sqlpage1 = () => {
         PAGE_IDENTIFIER,
         [userAnswer],
         isCorrect,
-        isCorrect ? POINTS : 0,
+        pointsToAward,
         CATEGORY,
         LEVEL,
         null
       );
 
-      if (response.success) {
+      if (response.success && isCorrect) {
         setIsCompleted(true);
         console.log('Answer submitted successfully:', response);
       }
+      return response;
     } catch (error) {
       console.error('Error submitting answer:', error.response?.data || error.message);
-      // Even if submission fails, we still show feedback to user
+      return null;
     } finally {
       setIsSubmitting(false);
     }
@@ -185,18 +196,18 @@ const Sqlpage1 = () => {
     setShowWords(true);
   }, []);
 
-  // Auto-advance sections every 20 seconds
+  // Auto-advance sections every 5 seconds
   useEffect(() => {
     if (currentSection < 2) {
       const timer = setTimeout(() => {
         setCurrentSection(prev => prev + 1);
-      }, 20000);
+      }, 5000);
 
       return () => clearTimeout(timer);
     } else if (currentSection === 2) {
       const finalTimer = setTimeout(() => {
         setIsIntroComplete(true);
-      }, 20000);
+      }, 5000);
 
       return () => clearTimeout(finalTimer);
     }
@@ -279,14 +290,35 @@ const Sqlpage1 = () => {
                       passwordCorrect;
 
     console.log('Final Result:', isCorrect ? 'CORRECT' : 'INCORRECT');
-
-    // Submit the answer to backend
-    await submitAnswer(isCorrect, trimmedQuery);
+    console.log('Current Attempts:', attempts);
 
     if (isCorrect) {
+      // Calculate points based on current attempts (before this correct answer)
+      const pointsEarned = calculatePoints(attempts);
+      setCurrentPoints(pointsEarned);
+      
+      // Submit the correct answer to backend with earned points
+      await submitAnswer(true, trimmedQuery, pointsEarned);
+      
       setShowSuccessModal(true);
       setSqlQuery('');
     } else {
+      // Increment attempts for wrong answer
+      const newAttempts = attempts + 1;
+      setAttempts(newAttempts);
+      
+      // Calculate new points after this wrong attempt
+      const newPoints = calculatePoints(newAttempts);
+      setCurrentPoints(newPoints);
+      
+      console.log('Wrong answer! Attempts:', newAttempts, 'Points remaining:', newPoints);
+      
+      // If max attempts reached, submit with 0 points and mark as completed (failed)
+      if (newAttempts >= MAX_ATTEMPTS) {
+        await submitAnswer(false, trimmedQuery, 0);
+        setIsCompleted(true); // Lock the question after max attempts
+      }
+      
       setShowErrorModal(true);
     }
   };
@@ -461,8 +493,8 @@ const Sqlpage1 = () => {
           viewport={{ once: true, amount: 0.3 }}
         >
           {isCompleted ? (
-            // SHOW DOOR - QUESTION ALREADY ANSWERED
-            <div className=" p-8 md:p-12 rounded-3xl shadow-2xl">
+            // SHOW DOOR - QUESTION ALREADY ANSWERED CORRECTLY OR MAX ATTEMPTS REACHED
+            <div className="p-8 md:p-12 rounded-3xl shadow-2xl">
               <motion.div
                 variants={doorVariants}
                 initial="hidden"
@@ -522,6 +554,20 @@ const Sqlpage1 = () => {
                 You've installed a magical stone door at the cave's entrance — a lock that responds only to secret passwords. Your family knows the correct password, and the stone door recognizes their voices, allowing them safe passage. Now write the code to setup the lock.
               </p>
 
+              {/* Points and Attempts Display */}
+              <div className="flex justify-center gap-6 mb-6">
+                <div className="bg-yellow-500/20 border-2 border-yellow-400 rounded-xl px-6 py-3">
+                  <span className="text-yellow-400 font-bold text-lg">
+                    🏆 Points Available: {calculatePoints(attempts)}
+                  </span>
+                </div>
+                <div className="bg-red-500/20 border-2 border-red-400 rounded-xl px-6 py-3">
+                  <span className="text-red-400 font-bold text-lg">
+                    ⚔️ Attempts: {attempts}/{MAX_ATTEMPTS}
+                  </span>
+                </div>
+              </div>
+
               {/* Hint Button */}
               <div className="flex justify-center mb-6">
                 <button
@@ -552,7 +598,7 @@ const Sqlpage1 = () => {
                   onKeyPress={(e) => e.key === 'Enter' && handleExecuteQuery()}
                   placeholder="Write Sql Query"
                   disabled={isSubmitting}
-                  className={`w-full h-[66px] bg-gray-400/40 backdrop-blur-sm rounded-[10px] px-6 pr-28 text-[#8B0000] placeholder:text-[#8B0000] placeholder:font-semibold text-lg font-semibold outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
+                  className={`w-full h-[66px] bg-gray-400/40 backdrop-blur-sm rounded-[10px] px-6 pr-28 text-white placeholder:text-white placeholder:font-semibold text-lg font-semibold outline-none focus:ring-2 focus:ring-purple-500/50 transition-all ${
                     isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
                   }`}
                 />
@@ -744,9 +790,14 @@ const Sqlpage1 = () => {
                   <p className="text-green-200 text-lg mb-2">
                     ✅ SQL Query Executed Successfully
                   </p>
-                  <p className="text-green-200 text-lg">
-                    🏆 +{POINTS} Points Earned!
+                  <p className="text-green-200 text-lg mb-2">
+                    🏆 +{currentPoints} Points Earned!
                   </p>
+                  {attempts > 0 && (
+                    <p className="text-yellow-200 text-sm">
+                      (Solved in {attempts + 1} attempt{attempts > 0 ? 's' : ''})
+                    </p>
+                  )}
                 </div>
 
                 <button
@@ -833,21 +884,40 @@ const Sqlpage1 = () => {
                 </p>
 
                 <div className="bg-red-800/40 border-2 border-red-400 rounded-xl p-6 mb-6">
-                  <p className="text-red-200 text-lg mb-2">
-                    💡 Remember:
-                  </p>
-                  <ul className="text-red-200 text-left list-disc list-inside space-y-1">
-                    <li>Check the spelling of table and column names</li>
-                    <li>Passwords are case-sensitive</li>
-                    <li>Use both AND conditions for name and password</li>
-                  </ul>
+                  {attempts >= MAX_ATTEMPTS ? (
+                    <>
+                      <p className="text-red-200 text-lg mb-2">
+                        ⚠️ Maximum attempts reached!
+                      </p>
+                      <p className="text-red-200 text-lg">
+                        You earned 0 points for this challenge.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-red-200 text-lg mb-2">
+                        ⚔️ Attempt {attempts} of {MAX_ATTEMPTS}
+                      </p>
+                      <p className="text-yellow-200 text-lg mb-2">
+                        -2 points deducted! Points remaining: {calculatePoints(attempts)}
+                      </p>
+                      <p className="text-red-200 text-lg mb-4">
+                        💡 Remember:
+                      </p>
+                      <ul className="text-red-200 text-left list-disc list-inside space-y-1">
+                        <li>Check the spelling of table and column names</li>
+                        <li>Passwords are case-sensitive</li>
+                        <li>Use both AND conditions for name and password</li>
+                      </ul>
+                    </>
+                  )}
                 </div>
 
                 <button
                   onClick={() => setShowErrorModal(false)}
                   className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all"
                 >
-                  Try Again
+                  {attempts >= MAX_ATTEMPTS ? 'Continue' : 'Try Again'}
                 </button>
               </div>
             </motion.div>
