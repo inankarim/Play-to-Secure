@@ -18,6 +18,7 @@ import PostPage from "./pages/PostPage";
 import QuizHomePage from "./pages/QuizHomePage";
 import QuizPage from "./pages/QuizPage";
 import Level2Routes from "./Level2Routes";
+import Level1Routes from "./Level1Routes";
 
 import { useAuthStore } from "./store/useAuthStore";
 import { useThemeStore } from "./store/useThemeStore";
@@ -60,6 +61,8 @@ const App = () => {
         
         {/* Level 2 Routes (No Navbar) */}
         <Route path="/level2/*" element={<Level2Routes />} />
+
+        <Route path="/level1/*" element={<Level1Routes />} />
 
         <Route path="/posts" element={authUser ? <PostPage /> : <Navigate to="/login" />} />
         <Route path="/quizHome" element={authUser ? <QuizHomePage /> : <Navigate to="/login" />} />
