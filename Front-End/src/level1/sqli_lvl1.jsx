@@ -1,165 +1,204 @@
-import React, { useRef } from "react";
-import { ChevronDown } from 'lucide-react';
+import React, { useRef, useState } from "react";
+import { ChevronDown } from "lucide-react";
 
-// Import all images
-import arrow1 from "../assets/sqli/arrow-1.svg";
-import arrow2 from "../assets/sqli/arrow-2.svg";
-import arrow3 from "../assets/sqli/arrow-3.svg";
-import arrow4 from "../assets/sqli/arrow-4.svg";
-import arrow6 from "../assets/sqli/arrow-6.svg";
-import arrow7 from "../assets/sqli/arrow-7.svg";
-import attacker from "../assets/sqli/attacker.png";
-import bigbanner from "../assets/sqli/bigbanner.png";
-import database from "../assets/sqli/database.png";
-import form from "../assets/sqli/form.png";
-import line1 from "../assets/sqli/line-1.svg";
-import line2 from "../assets/sqli/line-2.svg";
-import line3 from "../assets/sqli/line-3.svg";
-import line4 from "../assets/sqli/line-4.svg";
-import rectangle3 from "../assets/sqli/rectangle-3.svg";
-import rectangle6 from "../assets/sqli/rectangle-6.svg";
-import rectangle7 from "../assets/sqli/rectangle-7.svg";
-import sqliBackground from "../assets/sqli/sqlibackground.png";
+// Images
+import attacker from "../assets/sqli_lvl1/attacker.png";
+import bigbanner from "../assets/sqli_lvl1/bigbanner.png";
+import database from "../assets/sqli_lvl1/database.png";
+import form from "../assets/sqli_lvl1/form.png";
+import sqliBackground from "../assets/sqli_lvl1/sqlibackground.png";
 
 const SQLiLvl1 = () => {
   const diagramRef = useRef(null);
+  const [hoveredElement, setHoveredElement] = useState(null);
+  const [showDiagram, setShowDiagram] = useState(false);
 
   const scrollToDiagram = () => {
-    diagramRef.current?.scrollIntoView({ 
-      behavior: 'smooth' 
-    });
+    setShowDiagram(true);
+    setTimeout(() => {
+      diagramRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
   };
 
   return (
-    <div className="overflow-y-auto h-screen">
-      {/* First Section - Banner */}
-      <section 
-        className="relative min-h-screen flex flex-col items-center justify-center"
-        style={{
-          backgroundImage: `url(${sqliBackground})`,
-          backgroundSize: 'cover',
-          backgroundPosition: '50% 50%'
-        }}
-      >
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 via-red-950 to-black text-white overflow-y-auto">
+      {/* Continuous scrollable content */}
+
+      {/* -------------------------------------- FIRST SECTION – BANNER WITH BREACH REPORT --------------------------------------- */}
+      {/* Banner Container */}
+      <div className="relative w-full min-h-screen flex items-center justify-center overflow-hidden py-20">
+        {/* Banner Image */}
         <img
-          className="w-full max-w-[1100px] h-auto px-4"
-          alt="SQL Injection Attack Banner"
           src={bigbanner}
+          alt="SQL Injection Banner"
+          className="absolute inset-0 w-full h-full object-cover opacity-40"
         />
 
-        {/* Scroll Button */}
-        <button 
-          onClick={scrollToDiagram}
-          className="mt-8 bg-amber-800 hover:bg-amber-900 text-white px-6 py-3 rounded-full font-bold shadow-lg transition-all hover:scale-105 flex items-center gap-2 animate-pulse"
-        >
-          <span>Learn How It Works</span>
-          <ChevronDown className="w-5 h-5 animate-bounce" />
-        </button>
-      </section>
+        {/* Animated scanning glow */}
+        <div className="absolute inset-0 bg-gradient-to-b from-red-600/20 via-transparent to-transparent animate-pulse"></div>
 
-      {/* Second Section - Diagram */}
-      <section 
-        ref={diagramRef}
-        className="relative min-h-screen flex items-center justify-center py-20"
-        style={{
-          backgroundImage: `url(${sqliBackground})`,
-          backgroundSize: 'cover',
-          backgroundPosition: '50% 50%'
-        }}
-      >
-        <div className="relative w-full max-w-[1190px] h-[929px] mx-auto">
-          {/* Attacker */}
-          <img
-            className="absolute top-[189px] left-0 w-[248px] h-[456px]"
-            alt="Attacker illustration"
-            src={attacker}
-          />
+        {/* Text Overlay */}
+        <div className="relative z-10 text-center px-4 max-w-4xl">
+          {/* Main Title */}
+          <h1 
+            className="text-6xl md:text-7xl font-black mb-4 tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 animate-pulse"
+            style={{ fontFamily: "'Orbitron', 'Rajdhani', 'Audiowide', sans-serif" }}
+          >
+            ATTACK METHOD: SQL INJECTION
+          </h1>
 
-          {/* Database */}
-          <img
-            className="absolute top-[189px] right-0 w-[236px] h-[236px]"
-            alt="Database illustration"
-            src={database}
-          />
+          {/* Animated Underline */}
+          <div className="w-64 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent mx-auto mb-6 animate-pulse"></div>
 
-          {/* Password Box */}
-          <div className="absolute top-[494px] right-[222px] w-[221px] h-[35px] bg-[#dfd2d0] rounded-[30px] border-[3px] border-solid border-[#f31212]" />
-          <div className="absolute top-[495px] right-[240px] w-[186px] font-['Madimi_One'] text-[#920000] text-xl text-center">
-            All passwords
-          </div>
-
-          {/* Username Box */}
-          <div className="absolute top-[570px] right-[239px] w-[221px] h-[35px] bg-[#dfd2d0] rounded-[30px] border-[3px] border-solid border-[#f31212]" />
-          <div className="absolute top-[574px] right-[256px] w-[186px] font-['Madimi_One'] text-[#920000] text-xl text-center">
-            All usernames
-          </div>
-
-          {/* Login Form */}
-          <img
-            className="absolute top-[168px] left-[378px] w-[248px] h-[278px]"
-            alt="Login form illustration"
-            src={form}
-          />
-
-          {/* Injection Attack Label */}
-          <img
-            className="absolute top-[108px] left-[9px] w-[347px] h-[60px]"
-            alt=""
-            src={rectangle3}
-          />
-          <h3 className="absolute top-[114px] left-[46px] font-['Madimi_One'] text-white text-4xl text-center">
-            Injection ATTACK
-          </h3>
-
-          {/* How SQL INJECTION occurs */}
-          <img
-            className="absolute top-0 left-[341px] w-[476px] h-[70px]"
-            alt=""
-            src={rectangle7}
-          />
-          <h2 className="absolute top-1.5 left-[365px] font-['Madimi_One'] text-white text-4xl text-center">
-            How SQL INJECTION occurs
+          {/* Subtitle */}
+          <h2 
+            className="text-3xl md:text-4xl font-bold mb-8 tracking-widest text-red-400 hover:text-red-300 transition-colors duration-300"
+            style={{ fontFamily: "'Rajdhani', 'Audiowide', sans-serif", textShadow: "0 0 20px rgba(239, 68, 68, 0.5)" }}
+          >
+            THE BREACH REPORT
           </h2>
 
-          {/* Database Label */}
-          <img
-            className="absolute top-[146px] right-[121px] w-[284px] h-[43px]"
-            alt=""
-            src={rectangle6}
-          />
-          <p className="absolute top-[132px] right-[194px] w-[178px] font-['Madimi_One'] text-white text-[32px] text-center">
-            DATABASE
-          </p>
+          {/* Breach Stats */}
+          <div className="space-y-3 text-lg md:text-xl font-mono mb-10">
+            <p className="text-red-300 hover:text-red-100 hover:scale-105 transition-all duration-300 cursor-default hover:drop-shadow-[0_0_15px_rgba(252,165,165,0.8)]">
+              <span className="text-red-500 font-bold animate-pulse">⚠</span> 65 WEBSITES COMPROMISED
+            </p>
+            <p className="text-orange-300 hover:text-orange-100 hover:scale-105 transition-all duration-300 cursor-default hover:drop-shadow-[0_0_15px_rgba(253,186,116,0.8)]">
+              <span className="text-orange-500 font-bold animate-pulse">⚠</span> 2,000,000+ EMAIL ADDRESSES STOLEN
+            </p>
+            <p className="text-yellow-300 hover:text-yellow-100 hover:scale-105 transition-all duration-300 cursor-default hover:drop-shadow-[0_0_15px_rgba(253,224,71,0.8)]">
+              <span className="text-yellow-500 font-bold animate-pulse">⚠</span> DATA SOLD ON UNDERGROUND CHANNELS
+            </p>
+          </div>
 
-          {/* Arrows and Lines */}
-          <img className="absolute top-[313px] right-[23px] w-0.5 h-[202px]" alt="" src={arrow2} />
-          <img className="absolute top-[515px] right-[21px] w-[201px] h-px" alt="" src={arrow3} />
-          <img className="absolute top-[515px] left-[670px] w-[77px] h-px" alt="" src={arrow4} />
-          <img className="absolute top-[587px] right-[121px] w-[118px] h-0.5" alt="" src={arrow6} />
-          <img className="absolute top-[515px] right-[124px] w-px h-[74px]" alt="" src={line1} />
-          <img className="absolute top-[580px] left-[670px] w-[63px] h-px" alt="" src={line2} />
-          <img className="absolute top-[420px] left-[670px] w-0.5 h-[163px]" alt="" src={line3} />
-          <img className="absolute top-[417px] left-[248px] w-[127px] h-0.5" alt="" src={arrow7} />
-          <img className="absolute top-[421px] left-[375px] w-[296px] h-px" alt="" src={line4} />
-          <img className="absolute top-[311px] right-[123px] w-[101px] h-1" alt="" src={arrow1} />
-
-          {/* Description Box */}
-          <div className="absolute top-[645px] left-[19px] right-[12px] h-[284px] bg-[#78503e] rounded-[30px] border-[5px] border-solid border-white shadow-[0px_4px_4px_#ffffff]" />
-          <p className="absolute top-[666px] left-[75px] right-[75px] font-['Lakki_Reddy'] text-white text-[40px] leading-relaxed">
-            SQL injection (SQLi) is a web security vulnerability that allows an
-            attacker to interfere with the queries that an application makes to
-            its database. This can allow an attacker to view data that they are
-            not normally able to retrieve.
-          </p>
+          {/* Button with pulse effect - Hidden after click */}
+          {!showDiagram && (
+            <button
+              onClick={scrollToDiagram}
+              className="group relative px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold rounded-lg shadow-2xl transform hover:scale-110 transition-all duration-300 overflow-hidden"
+              style={{ fontFamily: "'Rajdhani', sans-serif" }}
+            >
+              <span className="relative z-10 flex items-center gap-2 text-lg tracking-wider">
+                How SQL INJECTION occurs
+                <ChevronDown className="w-5 h-5 animate-bounce" />
+              </span>
+              {/* Animated glow effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-red-600 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-300"></div>
+              {/* Shimmer effect */}
+              <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            </button>
+          )}
         </div>
+      </div>
 
-        {/* Continue Button */}
-        <button 
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-full font-bold text-xl shadow-lg transition-all hover:scale-105"
+      {/* -------------------------------------- SECOND SECTION – SQLi Diagram (Hidden until button clicked) --------------------------------------- */}
+      {showDiagram && (
+        <div
+          ref={diagramRef}
+          className="min-h-screen bg-gradient-to-b from-gray-900 to-black p-8 md:p-16"
         >
-          Continue to Training →
-        </button>
-      </section>
+          {/* ---------- DIAGRAM GRID ----------- */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-12">
+            {/* Left side — attacker */}
+            <div className="flex flex-col items-center space-y-4">
+              {/* Title */}
+              <h3 className="text-2xl font-bold text-red-500 mb-4">
+                Injection ATTACK
+              </h3>
+
+              {/* Attacker Image — permanent glow */}
+              <div className="relative">
+                <div className="absolute inset-0 bg-red-500 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+                <img
+                  src={attacker}
+                  alt="Attacker"
+                  className="relative w-40 h-40 object-contain drop-shadow-2xl"
+                />
+              </div>
+
+              {/* Description — always visible */}
+              <p className="text-center text-gray-300 font-semibold text-lg">
+                💻 Sends malicious input
+              </p>
+            </div>
+
+            {/* Middle — login form */}
+            <div
+              className="flex flex-col items-center space-y-4 relative"
+              onMouseEnter={() => setHoveredElement('form')}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              {/* Login Form Image — Increased Size */}
+              <img
+                src={form}
+                alt="Login Form"
+                className="w-64 h-64 object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-110"
+              />
+
+              {/* Vulnerable entry point label */}
+              {hoveredElement === 'form' && (
+                <div className="absolute -bottom-8 bg-yellow-500 text-black px-4 py-2 rounded-lg font-bold animate-bounce">
+                  ⚠️ Vulnerable entry point
+                </div>
+              )}
+
+              {/* Arrow pointing down with animation */}
+              <div className="flex flex-col items-center mt-8">
+                {/* Vertical line */}
+                <div className="w-1 h-16 bg-gradient-to-b from-red-500 to-transparent animate-pulse"></div>
+                {/* Arrowhead */}
+                <div className="w-0 h-0 border-l-[12px] border-l-transparent border-r-[12px] border-r-transparent border-t-[20px] border-t-red-500 animate-bounce"></div>
+              </div>
+            </div>
+
+            {/* Right side — database */}
+            <div
+              className="flex flex-col items-center space-y-4"
+              onMouseEnter={() => setHoveredElement('database')}
+              onMouseLeave={() => setHoveredElement(null)}
+            >
+              <h3 className="text-2xl font-bold text-blue-400 mb-4">
+                DATABASE
+              </h3>
+
+              <div className="relative">
+                <img
+                  src={database}
+                  alt="Database"
+                  className="w-48 h-48 object-contain drop-shadow-2xl transition-transform duration-300 hover:scale-110"
+                />
+
+                {/* Red border box for data leaks */}
+                {hoveredElement === 'database' && (
+                  <div className="absolute inset-0 border-4 border-red-500 rounded-lg animate-pulse"></div>
+                )}
+              </div>
+
+              <div className="text-center space-y-2 text-red-300 font-mono">
+                <p>🔓 All passwords</p>
+                <p>👤 All usernames</p>
+              </div>
+            </div>
+          </div>
+
+          {/* ---------- EXPLANATION BOX ---------- */}
+          <div className="max-w-4xl mx-auto bg-gray-800/50 backdrop-blur-sm border border-red-500/30 rounded-lg p-8 mb-8">
+            <p className="text-gray-300 leading-relaxed text-lg">
+              SQL injection (SQLi) is a web security vulnerability that allows
+              an attacker to interfere with the queries that an application
+              makes to its database. This can allow an attacker to view data
+              that they are not normally able to retrieve.
+            </p>
+          </div>
+
+          {/* Continue button */}
+          <div className="flex justify-center">
+            <button className="px-8 py-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 text-white font-bold rounded-lg shadow-2xl transform hover:scale-105 transition-all duration-300">
+              Continue to Training →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
