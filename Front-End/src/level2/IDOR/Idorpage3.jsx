@@ -23,8 +23,8 @@ const Idorpage3 = () => {
             if (response.success) {
                 setCompletedItems(response.data.completedItems);
                 
-                // Check if all 5 quests are completed
-                if (response.data.completedItems.length === 5) {
+                // Check if all 4 quests are completed
+                if (response.data.completedItems.length === 4) {
                     setShowCompletion(true);
                 }
             }
@@ -55,8 +55,15 @@ const Idorpage3 = () => {
     const progress = (completedItems.length / 4) * 100;
     const allQuestsComplete = completedItems.length === 4;
 
+    // ✅ UPDATED: Conditional navigation based on completion status
     const handleBeginSearch = () => {
-        navigate('/level2/idorpage4');
+        if (allQuestsComplete) {
+            // If all quests complete (100%), route to quizHome
+            navigate('/quizHome');
+        } else {
+            // Otherwise, continue the journey
+            navigate('/level2/idorpage4');
+        }
     };
 
     // Handle completing the IDOR attack
@@ -206,7 +213,7 @@ const Idorpage3 = () => {
                     )}
                 </AnimatePresence>
 
-                {/* Continue/Begin Search button */}
+                {/* Continue/Begin Search button - ✅ UPDATED: Dynamic text and routing */}
                 <motion.button
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -216,7 +223,7 @@ const Idorpage3 = () => {
                     onClick={handleBeginSearch}
                     className="bg-gradient-to-r from-cyan-400 to-teal-400 text-gray-900 px-12 py-4 rounded-full text-xl font-bold shadow-2xl hover:from-cyan-300 hover:to-teal-300 transition-all duration-300 border-2 border-cyan-300"
                 >
-                    {allQuestsComplete ? 'Review Your Journey' : 'Begin Your Search'}
+                    {allQuestsComplete ? 'Return to Quest Hub' : 'Begin Your Search'}
                 </motion.button>
             </motion.div>
         </div>

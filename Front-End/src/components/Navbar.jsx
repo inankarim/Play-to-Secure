@@ -60,10 +60,7 @@ const Navbar = () => {
                   <User className="size-5" />
                   <span className="hidden sm:inline">Leaderboard</span>
                 </Link>
-                <Link to={"/level2"} className="btn btn-sm gap-2">
-                  <User className="size-5" />
-                  <span className="hidden sm:inline">Level2</span>
-                </Link>
+           
                 
                 
 

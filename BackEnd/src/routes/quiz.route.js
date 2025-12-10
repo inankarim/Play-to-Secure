@@ -1,30 +1,51 @@
-
 import express from "express";
-import { protectRoute } from "../middleware/auth.middleware.js"; // add when ready
+import { protectRoute } from "../middleware/auth.middleware.js";
 
 import { getNextQuestion, submitAnswer, getQuestionByOrder } from "../controller/quiz.flow.controller.js";
-import { getCategories, getLevelsByCategory, getCategoryStatus, getProgressSummary, getTotalOrder,getAnsweredTrail,getAnsweredPrev,getLastAnswered,getAnsweredHistory } from "../controller/quiz.progress.controller.js";
-
+import { getCategories, getLevelsByCategory, getCategoryStatus, getProgressSummary, getTotalOrder, getAnsweredTrail, getAnsweredPrev, getLastAnswered, getAnsweredHistory } from "../controller/quiz.progress.controller.js";
 import { getAnswerReflection } from "../controller/quiz.reflection.controller.js";
 
 const router = express.Router();
 
-// Flow
+// ==================== FLOW ROUTES ====================
+// Get next unanswered question in a segment
 router.get("/next", protectRoute, getNextQuestion);
-router.get("/question-by-order", protectRoute, getQuestionByOrder); //
-router.post("/submit", protectRoute, submitAnswer);
+
+// Get specific question by order number
 router.get("/question-by-order", protectRoute, getQuestionByOrder);
 
-// Progress & gating
-router.get("/categories", protectRoute, getCategories);
-router.get("/levels", protectRoute, getLevelsByCategory);
-router.get("/status", protectRoute, getCategoryStatus);
-router.get("/progress/summary", protectRoute, getProgressSummary);
+// Submit answer to a question
+router.post("/submit", protectRoute, submitAnswer);
+
+// Get reflection/explanation for an answer
 router.post("/reflection", protectRoute, getAnswerReflection);
+
+// ==================== PROGRESS & GATING ROUTES ====================
+// Get all available categories
+router.get("/categories", protectRoute, getCategories);
+
+// Get levels for a specific category
+router.get("/levels", protectRoute, getLevelsByCategory);
+
+// Get completion status for a category
+router.get("/status", protectRoute, getCategoryStatus);
+
+// Get overall progress summary
+router.get("/progress/summary", protectRoute, getProgressSummary);
+
+// Get last answered question in a segment
+router.get("/progress/last-answered", protectRoute, getLastAnswered);
+
+// Get answer history for a segment
+router.get("/progress/history", protectRoute, getAnsweredHistory);
+
+// Get total number of questions in a segment
 router.get("/total-order", protectRoute, getTotalOrder);
-router.get("/answerd-trail", protectRoute, getAnsweredTrail);
-router.get("/flow/answered-prev", protectRoute, getAnsweredPrev);
-router.get('/progress/last-answered', protectRoute, getLastAnswered);
-router.get('/progress/history', protectRoute, getAnsweredHistory);
+
+// Get trail of answered questions
+router.get("/answered-trail", protectRoute, getAnsweredTrail); // ✅ Fixed typo: was "answerd-trail"
+
+// Get previous answered question
+router.get("/answered-prev", protectRoute, getAnsweredPrev); // ✅ Fixed: removed "/flow" prefix
 
 export default router;
