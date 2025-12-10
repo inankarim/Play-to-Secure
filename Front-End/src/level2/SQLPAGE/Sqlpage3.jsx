@@ -36,11 +36,18 @@ const Sqlpage3 = () => {
     const [index, setIndex] = useState(0);
     const navigate = useNavigate();
     // ---------- PLAY SIREN ON PAGE LOAD ----------
-    useEffect(() => {
-        const audio = new Audio(police);
-        audio.volume = 0.4;        // lower volume
-        audio.play().catch(() => {});  // ignore autoplay errors
-    }, []);
+// ---------- PLAY SIREN ON PAGE LOAD ----------
+useEffect(() => {
+    const audio = new Audio(police);
+    audio.volume = 0.4;
+    audio.play().catch(() => {});
+    
+    // ADD THIS: Cleanup function
+    return () => {
+        audio.pause();
+        audio.currentTime = 0;
+    };
+}, []);
 
     // ---------- ANIMATION: STOP AT FINAL FRAME ----------
     useEffect(() => {

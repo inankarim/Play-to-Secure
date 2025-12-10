@@ -33,12 +33,12 @@ const DEFAULT_QUESTION = {
   points: 10,
   level: 1,
   category: DEFAULT_CATEGORY,
-  difficulty: "Medium",
+  difficulty: "Easy",
   explanation: "",
   tags: [],
   isActive: true,
   timeLimit: 30,
-  order: 0,
+  order: 1,
 };
 
 const AdminQuizPage = () => {

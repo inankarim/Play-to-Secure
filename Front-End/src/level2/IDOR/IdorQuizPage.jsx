@@ -14,11 +14,10 @@ const IdorQuizPage = () => {
 
   // Map fromPage to question order and item name
   const pageOrderMap = {
-    'idorpage5': { order: 1, itemName: 'crown' },
+    'idorpage9': { order: 1, itemName: 'crown' },
     'idorpage6': { order: 2, itemName: 'scroll' },
     'idorpage7': { order: 3, itemName: 'key' },
     'idorpage8': { order: 4, itemName: 'diamond' },
-    'idorpage9': { order: 5, itemName: 'shield' },
   };
 
   const pageConfig = pageOrderMap[fromPage] || { order: 1, itemName: 'crown' };
@@ -133,8 +132,13 @@ const IdorQuizPage = () => {
     }
   };
 
+  // Navigate back to where the user came from (top back button)
+  const handleBackToOrigin = () => {
+    navigate(fromPage ? `/level2/${fromPage}` : '/level2/idorpage4');
+  };
+
+  // Navigate to IDOR hub page3 (after submission)
   const handleBackToJourney = () => {
-    // Go back to IDOR hub
     navigate('/level2/idorpage3');
   };
 
@@ -194,11 +198,11 @@ const IdorQuizPage = () => {
             )}
           </div>
           <button
-            onClick={() => navigate('/level2/idorpage4')}
+            onClick={() => navigate(fromPage ? `/level2/${fromPage}` : '/level2/idorpage4')}
             className="mt-6 px-8 py-4 bg-amber-800 text-white rounded-lg font-bold hover:bg-amber-700 transition-all"
             style={{ fontFamily: "'Uncial Antiqua', cursive" }}
           >
-            Return to IDOR Hub
+            Return to Origin Page
           </button>
         </div>
       </div>
@@ -220,12 +224,12 @@ const IdorQuizPage = () => {
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-6 py-12">
-        {/* Back Button */}
+        {/* Back Button - Goes back to origin page (fromPage) */}
         <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          onClick={handleBackToJourney}
+          onClick={handleBackToOrigin}
           className="mb-8 px-6 py-3 text-lg font-bold rounded-lg border-4 shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
           style={{
             backgroundColor: 'rgba(255, 251, 235, 0.9)',
@@ -233,7 +237,7 @@ const IdorQuizPage = () => {
             color: '#78350f'
           }}
         >
-          <span className="text-2xl">←</span> Back to IDOR Hub
+          <span className="text-2xl">←</span> Back to Previous Page
         </motion.button>
 
         {/* Header */}
@@ -366,7 +370,7 @@ const IdorQuizPage = () => {
                 </p>
               )}
               
-              {/* After submission, show back to hub button */}
+              {/* After submission, show back to hub button - Goes to idorpage3 */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}

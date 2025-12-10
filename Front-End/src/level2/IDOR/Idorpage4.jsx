@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import bg from '../../assets/idorfrontdiv/bg-img2.png';
 import crown from '../../assets/idorfrontdiv/animation/crownframe1.png';
 import diamond from '../../assets/idorfrontdiv/animation/shieldframe.png';
-import sheild from '../../assets/idorfrontdiv/animation/diamondframe.png';
+
 import key from '../../assets/idorfrontdiv/animation/keyframe.png';
 import scroll from '../../assets/idorfrontdiv/animation/scrollframe.png';
 import glow from '../../assets/idorfrontdiv/animation/glowframeovercrown.png';
@@ -199,19 +199,11 @@ const Idorpage4 = () => {
                     alt="crown"
                     top="40%"
                     left="14.56%"
-                    onClick={() => handleItemClick("crown", '/level2/idorpage5')}
+                    onClick={() => handleItemClick("crown", '/level2/idorpage9')}
                 />
             )}
 
-            {!shouldHideItem("shield") && (
-                <HiddenItem
-                    image={sheild}
-                    alt="shield"
-                    top="20%"
-                    left="6%"
-                    onClick={() => handleItemClick("shield", '/level2/idorpage9')}
-                />
-            )}
+            
 
             {!shouldHideItem("diamond") && (
                 <HiddenItem
