@@ -24,8 +24,23 @@ const QuizPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
-  // ✅ NEW: Get return path from location state
-  const returnPath = location.state?.returnPath || "/quizHome";
+  // ✅ UPDATED: Generate return path based on category
+  const getReturnPath = () => {
+    if (location.state?.returnPath) {
+      return location.state.returnPath;
+    }
+    
+    // Default: construct path from category
+    if (category) {
+      // Convert category to lowercase and replace spaces with hyphens if needed
+      const formattedCategory = category.toLowerCase().replace(/\s+/g, '-');
+      return `/level2/${formattedCategory}page1`;
+    }
+    
+    return "/quizHome";
+  };
+  
+  const returnPath = getReturnPath();
 
   // Fetch question - ✅ FIXED: Added error handling, removed answer exposure
   useEffect(() => {
@@ -117,7 +132,7 @@ const QuizPage = () => {
 
   const handleNext = () => {
     if (currentQuestionOrder === totalQuestions) {
-      // ✅ FIXED: Navigate to return path instead of hardcoded /quizHome
+      // ✅ FIXED: Navigate to return path based on category
       console.log("Quiz completed, navigating to:", returnPath);
       navigate(returnPath);
     } else {

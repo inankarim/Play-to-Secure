@@ -26,7 +26,7 @@ const SQLiLvl1 = () => {
     // Navigate to SQLi Easy Level 1 quiz with return path
     // ✅ After completing quiz, user will be sent to /level2/sqlpage2
     navigate('/quiz/sqli/Easy/1', {
-      state: { returnPath: '/level2/sqlpage2' }
+      state: { returnPath: '/level2/sqlipage1' }
     });
   };
 

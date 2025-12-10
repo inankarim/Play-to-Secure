@@ -10,17 +10,17 @@ import monkey from "../assets/monkey.json";
 import tiger from "../assets/tiger.json";
 
 // Attack categories with their Level2 starting pages
+// Attack categories with their Level1 starting pages
 const ATTACK_CATEGORIES = [
-  { value: "sql", label: "SQL Injection 💉", startPage: "sqlpage1", finalPage: "sqlpage5" },
+  { value: "sql", label: "SQL Injection 💉", startPage: "sqli_lvl1", finalPage: "sqlpage5" },
   { value: "idor", label: "IDOR 🔑", startPage: "idorpage1", finalPage: "idorpage9" },
-  { value: "xss", label: "XSS 🧪", startPage: "xsspage1", finalPage: "xsspage5" },
+  { value: "xss", label: "XSS 🧪", startPage: "xss_lvl1", finalPage: "xsspage5" },
   { value: "dom clobbering", label: "DOM Clobbering 🌐", startPage: "dompage1", finalPage: "dompage5" },
   { value: "cdn tampering", label: "CDN Tampering 🚧", startPage: "cdnpage1", finalPage: "cdnpage5" },
   { value: "css injection", label: "CSS Injection 🎨", startPage: "csspage1", finalPage: "csspage5" },
   { value: "nosql", label: "NoSQL 📊", startPage: "nosqlpage1", finalPage: "nosqlpage5" },
   { value: "clickjacking", label: "Clickjacking 🖱️", startPage: "clickpage1", finalPage: "clickpage5" },
   { value: "csp bypass", label: "CSP Bypass 🔓", startPage: "csppage1", finalPage: "csppage5" },
-  
   { value: "broken authentication", label: "Broken Authentication 🔒", startPage: "authpage1", finalPage: "authpage5" },
 ];
 
@@ -104,7 +104,7 @@ const QuizHomePage = () => {
     if (isCompleted || !isUnlocked) return;
 
     // Navigate to the attack's starting page
-    navigate(`/level2/${category.startPage}`);
+    navigate(`/level1/${category.startPage}`);
   };
 
   // ----- UI helpers (your map layout) -----
