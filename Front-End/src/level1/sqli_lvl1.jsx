@@ -20,6 +20,7 @@ const SQLiLvl1 = () => {
     }, 100);
   };
 
+const sqli_lvl1 = memo(() => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-red-950 to-black text-white overflow-y-auto">
       {/* Continuous scrollable content */}
@@ -201,6 +202,6 @@ const SQLiLvl1 = () => {
       )}
     </div>
   );
-};
+});
 
-export default SQLiLvl1;
+export default sqli_lvl1;
